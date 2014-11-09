@@ -1,0 +1,9 @@
+{
+  "name": "virtual-whiteboard",
+  "version": "0.0.1",
+  "description": "Cloud Computing virtual whiteboard",
+  "dependencies": {
+    "express": "^4.10.1",
+    "socket.io": "^1.2.0"
+  }
+}
