@@ -4,6 +4,8 @@
   "description": "Cloud Computing virtual whiteboard",
   "dependencies": {
     "express": "^4.10.1",
-    "socket.io": "^1.2.0"
+    "http-proxy": "^1.6.2",
+    "socket.io": "^1.2.0",
+    "socket.io-client": "^1.2.0"
   }
 }
