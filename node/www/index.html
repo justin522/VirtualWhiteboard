@@ -1,154 +1,202 @@
-<html>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-//Drawing code came from  http://stackoverflow.com/questions/2368784/draw-by-mouse-with-html5-canvas
-var socket = io();
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
 
-var canvas, ctx, flag = false,
-    prevX = 0,
-    currX = 0,
-    prevY = 0,
-    currY = 0,
-    dot_flag = false;
+		<!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame
+		Remove this if you use the .htaccess -->
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-var x = "black",
-    y = 2;
+		<title>new</title>
+		<meta name="description" content="">
+		<meta name="author" content="Justin">
 
-function init() {
-    canvas = document.getElementById('can');
-    ctx = canvas.getContext("2d");
-    w = canvas.width;
-    h = canvas.height;
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    canvas.addEventListener("mousemove", function (e) {
-        findxy('move', e)
-    }, false);
-    canvas.addEventListener("mousedown", function (e) {
-        findxy('down', e)
-    }, false);
-    canvas.addEventListener("mouseup", function (e) {
-        findxy('up', e)
-    }, false);
-    canvas.addEventListener("mouseout", function (e) {
-        findxy('out', e)
-    }, false);
+		<!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
+		<link rel="shortcut icon" href="/favicon.ico">
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+		
+		<link rel='stylesheet' href='lib/normalize.css' />
+		<link rel='stylesheet' href='lib/jquery-ui/jquery-ui.css' />
+		<link rel='stylesheet' href='lib/spectrum.css' />
+		<style>
+			
+/* Icons
+----------------------------------*/
+
+/* states and images */
+#drawing-tools .ui-icon{
+	width: 32px;
+	height: 32px;
+	background-image: url("img/draw-icons.png");
+	margin-top: -16px;
+	margin-left: -16px;
 }
 
-function color(obj) {
-    switch (obj.id) {
-        case "green":
-            x = "green";
-            break;
-        case "blue":
-            x = "blue";
-            break;
-        case "red":
-            x = "red";
-            break;
-        case "yellow":
-            x = "yellow";
-            break;
-        case "orange":
-            x = "orange";
-            break;
-        case "black":
-            x = "black";
-            break;
-        case "white":
-            x = "white";
-            break;
-    }
-    if (x == "white") y = 14;
-    else y = 2;
+/* positioning */
+.draw-icon-rect {background-position: 0 0;}
+.draw-icon-ngon {background-position: -32px 0;}
+.draw-icon-circle {background-position: -64px 0;}
+.draw-icon-oval {background-position: -96px 0;}
+.draw-icon-line {background-position: -128px 0;}
+.draw-icon-pline {background-position: -160px 0;}
+.draw-icon-path {background-position: -192px 0;}
+.draw-icon-free {background-position: -224px 0;}
+.draw-icon-erase {background-position: 0 -32px;}
+.draw-icon-move {background-position: -32px -32px;}
+.draw-icon-rotate {background-position: -64px -32px;}
+.draw-icon-select {background-position: -96px -32px;}
+.draw-icon-text {background-position: -128px -32px;}
+.draw-icon-img {background-position: -160px -32px;}
+.draw-icon-undo {background-position: -192px -32px;}
+		</style>
+		<style>
+			body{
+				background-color: gray;
+				background: linear-gradient(to right, #000000, #000099 10%, #0000aa 50%, #000099 90%, #000000);
+			}
+			body>div{
+				position:relative;
+				width:1140px;
+				margin-top:10px;
+				margin-left:auto;
+				margin-right:auto;
+			}
+			#whiteboard{
+				cursor:url(img/freehand-marker.png), auto;
+			}
+			svg{
+				fill:white;
+			}
+			.layer{
+				width:700px;
+				height: 500px;
+				border: solid;
+				background-color: white;
+			}
+			#tab-container{
+				position: absolute;
+				top:0;
+				bottom:0;
+				left:710px;
+				height:500px;
+			}
+			#tabs{
+				position: absolute;
+				top:0;
+				left:710px;
+				height: 99%;
+				min-height: 900px;
+			}
+			.ui-tabs-panel{
+				background:white;
+				color:black;
+				overflow: auto;
+			}
+			
+			
+			#chat{
+				position:absolute;
+				top:510px;
+				bottom:0;
+				left:0;
+				width:705px;
+				min-height: 396px;
+				color:black;
+			}
+			#chat-display{
+				height: 320px;
+				background-color: slategray;
+				margin: 1em;
+			}
+			#chat-input{
+				width:600px;
+				margin-left: 1em;
+			}
+			
+			#sample-container{
+				float: right;
+			}
+			
+			.uname{
+				color:blue;
+				font-style: italic;
+			}
+		</style>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src='lib/jquery.js'></script>
+		<script src='lib/jquery-ui/jquery-ui.min.js'></script>
+		<script src='lib/spectrum.js'></script>
+		<script src='js/whiteboard.js'></script>
+		<script src='js/chat.js'></script>
+		<script src='js/canvasTools.js'></script>
+	</head>
 
-}
-
-function draw() {
-	socket.emit('drawing',prevX,prevY,currX,currY);
-    /*ctx.beginPath();
-    ctx.moveTo(prevX, prevY);
-    ctx.lineTo(currX, currY);
-    ctx.strokeStyle = x;
-    ctx.lineWidth = y;
-    ctx.stroke();
-    ctx.closePath();*/
-}
-
-function erase() {
-    var m = confirm("Want to clear");
-    if (m) {
-        ctx.clearRect(0, 0, w, h);
-        document.getElementById("canvasimg").style.display = "none";
-    }
-}
-socket.on("returnDraw",function(prevX,prevY,currX,currY){
-    ctx.beginPath();
-    ctx.moveTo(prevX, prevY);
-    ctx.lineTo(currX, currY);
-    ctx.strokeStyle = x;
-    ctx.lineWidth = y;
-    ctx.stroke();
-    ctx.closePath();
-
-})
-function save() {
-    document.getElementById("canvasimg").style.border = "2px solid";
-    var dataURL = canvas.toDataURL();
-    document.getElementById("canvasimg").src = dataURL;
-    document.getElementById("canvasimg").style.display = "inline";
-}
-
-function findxy(res, e) {
-    if (res == 'down') {
-        prevX = currX;
-        prevY = currY;
-        currX = e.clientX - canvas.offsetLeft;
-        currY = e.clientY - canvas.offsetTop;
-
-        flag = true;
-        dot_flag = true;
-        if (dot_flag) {
-            ctx.beginPath();
-            ctx.fillStyle = x;
-            ctx.fillRect(currX, currY, 2, 2);
-            ctx.closePath();
-            dot_flag = false;
-        }
-    }
-    if (res == 'up' || res == "out") {
-        flag = false;
-    }jquery.js
-    if (res == 'move') {
-        if (flag) {
-            prevX = currX;
-            prevY = currY;
-            currX = e.clientX - canvas.offsetLeft;
-            currY = e.clientY - canvas.offsetTop;
-            draw();
-        }
-    }
-}
-</script>
-
-
-<body onload="init()">
-    <canvas id="can" width="400" height="400" style="position:absolute;top:10%;left:10%;border:2px solid;"></canvas>
-    <div style="position:absolute;top:12%;left:43%;">Choose Color</div>
-    <div style="position:absolute;top:15%;left:45%;width:10px;height:10px;background:green;" id="green" onclick="color(this)"></div>
-    <div style="position:absolute;top:15%;left:46%;width:10px;height:10px;background:blue;" id="blue" onclick="color(this)"></div>
-    <div style="position:absolute;top:15%;left:47%;width:10px;height:10px;background:red;" id="red" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:45%;width:10px;height:10px;background:yellow;" id="yellow" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:46%;width:10px;height:10px;background:orange;" id="orange" onclick="color(this)"></div>
-    <div style="position:absolute;top:17%;left:47%;width:10px;height:10px;background:black;" id="black" onclick="color(this)"></div>
-    <div style="position:absolute;top:20%;left:43%;">Eraser</div>
-    <div style="position:absolute;top:22%;left:45%;width:15px;height:15px;background:white;border:2px solid;" id="white" onclick="color(this)"></div>
-    <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
-    <input type="button" value="save" id="btn" size="30" onclick="save()" style="position:absolute;top:55%;left:10%;">
-    <input type="button" value="clear" id="clr" size="23" onclick="erase()" style="position:absolute;top:55%;left:15%;">
-	<form id="chatform" action="">
-		<input id="m" autocomplete="off" />
-		<input type="submit" />
-	</form>
-
-</body>
+	<body>
+		<div>
+			<div id="whiteboard">
+				<!--<svg class="layer"></svg>-->
+				<canvas class="layer" id="layer0"></canvas>
+			</div>
+			<div id="tabs">
+				<ul>
+					<li><a href="#tools">Tools</a></li>
+					<li><a href="#layers">Layers</a></li>
+					<li><a href="#links">Files/Links</a></li>
+					<li><a href="#users">Users</a></li>
+				</ul>
+				<div id="tools">
+					<div id="drawing-tools">
+						<input type="checkbox" checked="checked" id="freehand" /><label for="freehand">Freehand</label></input>
+						<input type="checkbox" id="path"><label for="path">Path</label></input>
+						<input type="checkbox" id="polyline"><label for="polyline">Polyline</label></input>
+						<input type="checkbox" id="line"><label for="line">Line</label></input>
+						<input type="checkbox" id="circle"><label for="circle">Circle</label></input>
+						<input type="checkbox" id="oval"><label for="oval">Oval</label></input>
+						<input type="checkbox" id="rectangle"><label for="rectangle">Rectangle</input></label><br/><br/>
+						<input type="checkbox" id="erase"><label for="erase">Erase</label></input>
+						<input type="checkbox" id="select"><label for="select">Select</label></input>
+						<input type="checkbox" id="move"><label for="move">Move</label></input>
+						<input type="checkbox" id="rotate"><label for="rotate">Rotate</label></input>
+						<input type="checkbox" id="text"><label for="text">Text</label></input>
+						<input type="checkbox" id="image"><label for="image">Image</label></input>
+						<input type="checkbox" id="undo"><label for="undo">Undo</label></input>
+					</div><br/>
+					<div id="color-tools">
+						<svg id="sample-container" width="100" height="100">
+							<circle id="sample" cx="50" cy="50" r="40" stroke="black" stroke-width="1" fill="none" />
+						</svg>
+						<input id='fillcolor' class='colorpicker' /> Fill<br />
+						<input id='linecolor' class='colorpicker' /> Stroke<br />
+						<input id='linesize' class="number" value="1" maxlength="4" size="1" /> Thickness<br />
+					</div>
+				</div>
+				<div id="layers">
+					<div class="display-container">
+						
+					</div>
+				</div>
+				<div id="links">
+					<div class="display-container">
+						
+					</div>
+				</div>
+				<div id="users">
+					<div class="display-container">
+						invite users;
+					</div>
+				</div>
+			</div>
+			<div id="chat" class="ui-widget ui-widget-content ui-corner-all">
+				<div id="chat-display"></div>
+				<div id="chat-tools">
+					<input id="chat-input" type="text" />
+					<input id="post-chat" type="button" value="Post" /><br/>
+				</div>
+			</div>
+		</div>
+		<!--Remove later-->
+		 <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
+	</body>
 </html>
