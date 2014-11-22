@@ -2,6 +2,7 @@ var socket = io();
 $(document).ready(function(){
 	$("#post-chat").click(function(){
 		socket.emit('msg',"Justin", $('#chat-input').val());
+		alert("hey");
 		$('#chat-input').val('');
 	});
 	$("#fillcolor").spectrum({
