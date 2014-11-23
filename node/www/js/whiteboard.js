@@ -1,10 +1,16 @@
-var socket = io();
+
+var host = window.location.host.split(':')[0];
+//alert(host);
+var socket = io.connect('http://'+host);
+//var socket = io('http://localhost');
 $(document).ready(function(){
+//alert(socket);
 	$("#post-chat").click(function(){
 		socket.emit('msg',"Justin", $('#chat-input').val());
-		alert("hey");
+		//alert("hey");
 		$('#chat-input').val('');
 	});
+
 	$("#fillcolor").spectrum({
 		showAlpha: true,
 		allowEmpty:true,

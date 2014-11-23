@@ -1,9 +1,22 @@
-var socket = io();
+
+var host = window.location.host.split(':')[0];
+//alert(host);
+var socket = io.connect('http://'+host);
+//var socket = io('http://localhost');
 $(document).ready(function(){
+//alert(socket);
 	$("#post-chat").click(function(){
 		socket.emit('msg',"Justin", $('#chat-input').val());
+		//alert("hey");
 		$('#chat-input').val('');
 	});
+socket.on("msg",function(mess){
+	var message = JSON.parse(mess);
+	var usr = message.user;
+	var msg = message.msg;
+	alert('user ' + usr + ' mssg ' + msg);
+	$("#chat-display").append("<p><span class='uname'>"+usr+": </span>"+msg+"</p>");
+});
 	$("#fillcolor").spectrum({
 		showAlpha: true,
 		allowEmpty:true,

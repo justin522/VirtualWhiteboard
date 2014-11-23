@@ -1,6 +1,6 @@
 /**NEW**/
 var express = require('express')
-   // , routes = require('./routes')
+    , routes = require('./routes')
     , http = require('http')
     , path = require('path')
     , redis = require('redis')
@@ -13,8 +13,10 @@ var express = require('express')
 
 //var express = require('express');
 var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
+//var http = require('http').Server(app);
+//var io = require('socket.io')(http);
 var log = {};
 log.users = [];
 log.messages = [];
@@ -22,49 +24,51 @@ log.drawings = [];
 log.links = [];
 
 /**NEW**/
-
+//io.on('connection',function(socket){
+	//console.log('wrong logged in');
+//});
 var RedisStore = require('connect-redis')(session),
-	rClient = redis.createClient(),
+	rClient = redis.createClient(6379,'cs597-VirtualWhiteboardDB'),
 	sessionStore = new RedisStore({client:rClient});
-//var cookieParser = express.cookieParser('your secret here');
 
+//app.set('port',process.env.PORT || 3000);
+//app.set('views',__dirname + '/www');
+//app.set('view engine','ejs');
 app.use(cookieParser('your secret here'));
-app.use(session({store:sessionStore, key:'server', secret:'your secret here'}));
+app.use(session({store:sessionStore, key:'server', secret:'your secret here',resave:true,saveUninitialized:true}));
 
-app.use(express.static(__dirname + '/www')); //commment out this line and uncomment the next 3 for the origional implementation 
-// app.get('/', function(req, res){
-	// res.sendFile('index.html');
-// });
-/**NEW Session sockets**/
+//app.get('/',routes.index);
+
+app.use(express.static(__dirname + '/www')); 
 var SessionSockets = require('session.socket.io');
 var sessionSockets = new SessionSockets(io, sessionStore, cookieParser, 'server');
+//console.log('io ',io);
+//console.log('cookie ', cookieParser);
 
 /**NEW REDIS CLIENTS**/
-var sub = redis.createClient();
-var pub = redis.createClient();
-sub.subscribe('whiteboard');
+var sub = redis.createClient(6379,'cs597-VirtualWhiteboardDB');
+var pub = redis.createClient(6379,'cs597-VirtualWhiteboardDB');
+sub.subscribe('msg');
 
-
-
-
+/*app.get('/',function(req,res){
+	console.log('im here');
+	req.session.foo = req.session.foo || 'bar';
+});*/
 /*SOCKET DATA*/
+//io.on('connection',function(socket){
 sessionSockets.on('connection', function (err, socket, session) {
-    if(!session.user) return;
-
-/*io.on('connection', function(socket){
-	socket.on('drawing',function(prevX,prevY,currX,currY){
-		console.log("prevx: "+ prevX+" prevy: "	+ prevY + currX + currY);
-		//We could do fancy database collection here and possibly add undo function
-		io.emit("returnDraw",prevX,prevY,currX,currY);
-	});*/
+	console.log("log in");
+   // if(!session.user) return;
 	socket.on("msg",function(usr,m){
-		console.log("user");
+		//console.log("user");
 		var msg={};
 		msg.usr=usr;
 		msg.m=m;
 		log.messages.push(msg);
 		//io.emit("msg",usr,m); Now use pub.publish so all instances across servrs recieve
-		pub.publish('msg',usr,m);
+		var reply = JSON.stringify({action:'message',user:usr,msg:m});
+		console.log(reply);
+		pub.publish('msg',reply);
 	});
 	socket.on("link",function(usr,type,linkname,url){
 		var link={};
@@ -97,7 +101,7 @@ sessionSockets.on('connection', function (err, socket, session) {
 	});
 });
 
-http.listen(3000, function(){
+server.listen(3000, function(){
 	console.log('listening on *:3000');
 });
 
