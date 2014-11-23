@@ -10,7 +10,7 @@ import javax.persistence.NoResultException;
  * Handles DB reads/writes for the User table.
  */
 public class UserDao {
-    EntityManager em;
+    private EntityManager em;
 
     public UserDao() {
         em = DbConnection.getEntityManager();

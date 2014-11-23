@@ -18,7 +18,7 @@ public class User {
     @Column
     private String password;
 
-    @Column(name = "created", nullable = false, updatable=false)
+    @Column(name = "created", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
 
