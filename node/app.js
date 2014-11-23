@@ -49,11 +49,9 @@ var sessionSockets = new SessionSockets(io, sessionStore, cookieParser, 'server'
 var sub = redis.createClient(6379,'cs597-VirtualWhiteboardDB');
 var pub = redis.createClient(6379,'cs597-VirtualWhiteboardDB');
 sub.subscribe('msg');
+sub.subscribe('link');
+sub.subscribe('draw');
 
-/*app.get('/',function(req,res){
-	console.log('im here');
-	req.session.foo = req.session.foo || 'bar';
-});*/
 /*SOCKET DATA*/
 io.on('connection',function(socket){
 //sessionSockets.on('connection', function (err, socket, session) {
@@ -77,8 +75,9 @@ io.on('connection',function(socket){
 		link.name=linkname;
 		link.url=url;
 		log.links.push(link);
+		var reply = JSON.stringify({action:'link',user:usr,link:type+": <a href='"+url+"'>"+linkname+"</a>."})
 		//io.emit("msg",usr,usr+" shared a"+type+": <a href='"+url+"'>"+linkname+"</a>.");
-		pub.publish('msg',usr,usr+" shared a"+type+": <a href='"+url+"'>"+linkname+"</a>.");
+		pub.publish('msg',reply);
 	});
 	socket.on('draw',function(usr,type,layer,data){
 		console.log("prevx: "+ prevX+" prevy: "	+ prevY + currX + currY);
@@ -93,7 +92,8 @@ io.on('connection',function(socket){
 		drawings[objectID]=draw;
 		drawings.push(draw);
 		//io.emit("draw",prevX,prevY,currX,currY);
-		pub.publish('draw',prevX,prevY,currX,currY);
+		var reply = JSON.stringify({action:'draw',prevX:prevX,prevY:prevY,currX:currX,currY:currY,strokeColor:strokeColor,strokeWidth:strokeWidth})
+		pub.publish('draw',reply);
 	});
 
 	sub.on('message', function (channel, message) {
