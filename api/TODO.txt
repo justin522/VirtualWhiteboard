@@ -1,0 +1,10 @@
+To-Do Items
+===========
+
+- add password to User DB table and entity class
+- integrate password into '/users/create' and '/users/login' endpoints
+- plan and create remaining DB tables
+- create entity classes for all DB tables
+- stub out additional services/endpoints
+- implement DAO's and endpoints
+
