@@ -20,10 +20,11 @@ public class UserDao {
      * Creates a new user.
      *
      * @param username The username for the new user.
+     * @param password The password for the new user.
      * @return The newly created user object.
      */
-    public User createUser(String username) {
-        User user = new User(username);
+    public User createUser(String username, String password) {
+        User user = new User(username, password);
 
         em.getTransaction().begin();
         em.persist(user);
@@ -42,6 +43,24 @@ public class UserDao {
         try {
             return em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
                     .setParameter("username", username)
+                    .getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the user with the given credentials or null otherwise.
+     *
+     * @param username The username of the user logging in.
+     * @param password The password of the user logging in.
+     * @return The user object or null.
+     */
+    public User getUserByCreds(String username, String password) {
+        try {
+            return em.createQuery("SELECT u FROM User u WHERE u.username = :username AND u.password = :password", User.class)
+                    .setParameter("username", username)
+                    .setParameter("password", password)
                     .getSingleResult();
         } catch (NoResultException ex) {
             return null;

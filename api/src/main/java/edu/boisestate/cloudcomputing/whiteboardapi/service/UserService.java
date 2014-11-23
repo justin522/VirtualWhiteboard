@@ -2,6 +2,7 @@ package edu.boisestate.cloudcomputing.whiteboardapi.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.boisestate.cloudcomputing.whiteboardapi.exception.FailedLoginException;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.ApiUtil;
 import edu.boisestate.cloudcomputing.whiteboardapi.dao.UserDao;
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.User;
@@ -31,17 +32,18 @@ public class UserService {
      * @throws JsonProcessingException
      */
     @POST
-    @Path("/create/{username}")
+    @Path("/create/{username}/password/{password}")
     @Produces(MediaType.APPLICATION_JSON)
     public String createUser(
-            @PathParam("username") String username
+            @PathParam("username") String username,
+            @PathParam("password") String password
     ) throws JsonProcessingException {
         User user = getUserByName(username);
         if (user != null) {
             throw new UserAlreadyExistsException(ApiUtil.formatError("User already exists"));
         }
 
-        user = userDao.createUser(username);
+        user = userDao.createUser(username, password);
         return om.writeValueAsString(user);
     }
 
@@ -71,19 +73,21 @@ public class UserService {
      *
      * @param req The servlet request containing the session.
      * @param username The username of the user logging in.
+     * @param password The password of the user logging in.
      * @return The user who is now logged in.
      * @throws JsonProcessingException
      */
     @POST
-    @Path("/login/{username}")
+    @Path("/login/{username}/password/{password}")
     @Produces(MediaType.APPLICATION_JSON)
     public String loginUser(
             @Context HttpServletRequest req,
-            @PathParam("username") String username
+            @PathParam("username") String username,
+            @PathParam("password") String password
     ) throws JsonProcessingException {
-        User user = getUserByName(username);
+        User user = userDao.getUserByCreds(username, password);
         if (user == null) {
-            throw new UserNotFoundException(ApiUtil.formatError("User not found"));
+            throw new FailedLoginException(ApiUtil.formatError("Login failed"));
         }
 
         HttpSession session = req.getSession();
