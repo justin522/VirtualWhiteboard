@@ -6,7 +6,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.Room;
-import edu.boisestate.cloudcomputing.whiteboardapi.entity.User;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.DbConnection;
 
 public class RoomDao {

@@ -1,7 +1,6 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.service;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
