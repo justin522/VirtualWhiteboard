@@ -71,7 +71,11 @@ public class RoomDao {
 	}
 
 	public ArrayList<Room> getRoomsList() {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return (ArrayList<Room>) em
+					.createQuery("SELECT r FROM Room r",Room.class).getResultList();
+		} catch (NoResultException ex) {
+			return null;
+		}
 	}
 }
