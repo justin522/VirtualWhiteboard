@@ -26,6 +26,17 @@ public class RoomService {
 	private ObjectMapper om = new ObjectMapper();
 	private RoomDao roomDao = new RoomDao();
 
+	/**
+	 * Creates a new room with the given roomname.
+	 * 
+	 * @param roomname
+	 *            The roomname for the new room.
+	 * @param userid
+	 *            The user who created the room.
+	 * @return The newly created room.
+	 * @throws JsonProcessingException
+	 * @throws RoomAlreadyExistsException
+	 */
 	@POST
 	@Path("/create/{roomname}/userid/{userid}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -42,10 +53,26 @@ public class RoomService {
 		return om.writeValueAsString(room);
 	}
 
+	/**
+	 * Gets the room with the given roomname
+	 * 
+	 * @param roomname
+	 *            The roomname to look up.
+	 * @return room detail with the given roomname.
+	 */
 	private Room getRoomByName(String roomname) {
 		return roomDao.getRoomByName(roomname);
 	}
 
+	/**
+	 * Gets the room deatil for given roomname
+	 * 
+	 * @param roomname
+	 *            The roomname to look up.
+	 * @return room detail with the given roomname.
+	 * @throws JsonProcessingException
+	 * @throws RoomNotFoundException
+	 */
 	@GET
 	@Path("/{roomname}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -60,9 +87,15 @@ public class RoomService {
 		return om.writeValueAsString(room);
 	}
 
+	/**
+	 * To fetch all available Rooms
+	 * 
+	 * @return JSON of all available Rooms
+	 * @throws JsonProcessingException
+	 */
 	@GET
 	@Path("/getrooms")
-	@Produces("application/json")
+	@Produces(MediaType.APPLICATION_JSON)
 	public String getRoomsList() throws JsonProcessingException {
 		ArrayList<Room> room = new ArrayList<Room>();
 		String rooms = null;

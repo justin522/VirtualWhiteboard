@@ -8,6 +8,12 @@ import javax.persistence.NoResultException;
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.Room;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.DbConnection;
 
+/**
+ * Handles DB reads/writes for the Room table.
+ * 
+ * @author Milson
+ *
+ */
 public class RoomDao {
 	private EntityManager em;
 
@@ -15,6 +21,15 @@ public class RoomDao {
 		em = DbConnection.getEntityManager();
 	}
 
+	/**
+	 * Create Room with Chat and Board
+	 * 
+	 * @param roomname
+	 *            The roomname for the new Room.
+	 * @param userid
+	 *            The userid who created it
+	 * @return newly created Room
+	 */
 	public Room createRoom(String roomname, Long userid) {
 		Room room = new Room(roomname, userid);
 
@@ -25,6 +40,13 @@ public class RoomDao {
 		return room;
 	}
 
+	/**
+	 * To get detail about Room when searched by roomname
+	 * 
+	 * @param roomname
+	 *            The roomname for search
+	 * @return detail about the searched room
+	 */
 	public Room getRoomByName(String roomname) {
 		try {
 			return em
@@ -37,6 +59,13 @@ public class RoomDao {
 		}
 	}
 
+	/**
+	 * Search Room detail by roomid
+	 * 
+	 * @param roomid
+	 *            search by roomid
+	 * @return the detail about the room
+	 */
 	public Room getRoomById(Long roomid) {
 		try {
 			return em
@@ -48,6 +77,13 @@ public class RoomDao {
 		}
 	}
 
+	/**
+	 * Get the WhiteBoard of a particular Room
+	 * 
+	 * @param roomid
+	 *            search by roomid
+	 * @return the WhiteBoard detail of a room
+	 */
 	public Room getWhiteboardByRoom(Long roomid) {
 		try {
 			return em
@@ -59,6 +95,13 @@ public class RoomDao {
 		}
 	}
 
+	/**
+	 * Get the Chat of a particular Room
+	 * 
+	 * @param roomid
+	 *            search by roomid
+	 * @return the Chat detail of a room
+	 */
 	public Room getChatByRoom(Long roomid) {
 		try {
 			return em
@@ -70,10 +113,15 @@ public class RoomDao {
 		}
 	}
 
+	/**
+	 * To list all available Rooms
+	 * 
+	 * @return list of available Rooms
+	 */
 	public ArrayList<Room> getRoomsList() {
 		try {
-			return (ArrayList<Room>) em
-					.createQuery("SELECT r FROM Room r",Room.class).getResultList();
+			return (ArrayList<Room>) em.createQuery("SELECT r FROM Room r",
+					Room.class).getResultList();
 		} catch (NoResultException ex) {
 			return null;
 		}
