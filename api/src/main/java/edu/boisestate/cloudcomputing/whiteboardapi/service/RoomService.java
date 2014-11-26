@@ -17,7 +17,6 @@ import edu.boisestate.cloudcomputing.whiteboardapi.entity.Room;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomAlreadyExistsException;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomNotFoundException;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.ApiUtil;
-import edu.boisestate.cloudcomputing.whiteboardapi.util.JSONTansformer;
 
 /**
  * Handles API requests related to room, whiteboard and chat.
@@ -69,7 +68,7 @@ public class RoomService {
 		String rooms = null;
 		try {
 			room = roomDao.getRoomsList();
-			rooms = JSONTansformer.ConvertToJSON(room);
+			rooms = om.writeValueAsString(room);
 		} catch (Exception e) {
 			throw e;
 		}
