@@ -1,11 +1,10 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.dao;
 
-import java.util.ArrayList;
-
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.Room;
+import edu.boisestate.cloudcomputing.whiteboardapi.entity.RoomList;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.DbConnection;
 
 /**
@@ -78,13 +77,13 @@ public class RoomDao {
 	}
 
 	/**
-	 * Get the WhiteBoard of a particular Room
+	 * Get the Board Content of a particular Room
 	 * 
 	 * @param roomid
 	 *            search by roomid
 	 * @return the WhiteBoard detail of a room
 	 */
-	public Room getWhiteboardByRoom(Long roomid) {
+	public Room getBoardContentByRoom(Long roomid) {
 		try {
 			return em
 					.createQuery("SELECT r FROM Room r WHERE r.id = :roomid",
@@ -96,13 +95,13 @@ public class RoomDao {
 	}
 
 	/**
-	 * Get the Chat of a particular Room
+	 * Get the Chat Content of a particular Room
 	 * 
 	 * @param roomid
 	 *            search by roomid
 	 * @return the Chat detail of a room
 	 */
-	public Room getChatByRoom(Long roomid) {
+	public Room getChatContentByRoom(Long roomid) {
 		try {
 			return em
 					.createQuery("SELECT r FROM Room r WHERE r.id = :roomid",
@@ -118,10 +117,10 @@ public class RoomDao {
 	 * 
 	 * @return list of available Rooms
 	 */
-	public ArrayList<Room> getRoomsList() {
+	public RoomList getRoomsList() {
 		try {
-			return (ArrayList<Room>) em.createQuery("SELECT r FROM Room r",
-					Room.class).getResultList();
+			return (RoomList) em.createQuery("SELECT r FROM Room r", Room.class)
+					.getResultList();
 		} catch (NoResultException ex) {
 			return null;
 		}

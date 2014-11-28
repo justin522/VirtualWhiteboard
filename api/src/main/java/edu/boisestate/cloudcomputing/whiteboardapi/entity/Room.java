@@ -16,74 +16,71 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table
 public class Room {
-	 @Id
-	    @GeneratedValue
-	    private Long id;
-	 
-	    @Column
-	    private Long whiteboardid;
-	    
-	    @Column
-	    private Long chatid;
+	@Id
+	@GeneratedValue
+	private Long id;
 
-	    @Column
-	    private String roomname;
+	@Column
+	private String roomname;
 
-	    @Column
-	    private Long userid;
-	    
-	    @Column
-	    private String content;
+	@Column
+	private String board_content;
 
-	    @Column(name = "created", nullable = false, updatable = false)
-	    @Temporal(TemporalType.TIMESTAMP)
-	    private Date created;
+	@Column
+	private String chat_content;
 
-	    public Room(String roomname, Long userid) {
-	        this.roomname = roomname;
-	        this.userid = userid;
-	    }
+	@Column
+	private Long userid;
 
-	    public Room() {
-	    }
+	@Column(name = "created", nullable = false, updatable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date created;
 
-	    public Long getId() {
-	        return id;
-	    }
+	public Room(String roomname, Long userid) {
+		this.roomname = roomname;
+		this.userid = userid;
+	}
 
-	    public String getRoomName() {
-	        return roomname;
-	    }
+	public Room() {
+	}
 
-	    public void setRoomName(String roomname) {
-	        this.roomname = roomname;
-	    }
+	public Long getId() {
+		return id;
+	}
 
-	    @JsonIgnore
-	    public Long getWhiteboardID() {
-	        return whiteboardid;
-	    }
+	public String getRoomName() {
+		return roomname;
+	}
 
-	    public void setWhiteboardID(Long whiteboardid) {
-	        this.whiteboardid = whiteboardid;
-	    }
-	    
-	    @JsonIgnore
-	    public Long getChatID() {
-	        return chatid;
-	    }
+	public void setRoomName(String roomname) {
+		this.roomname = roomname;
+	}
 
-	    public void Chat(Long chatid) {
-	        this.chatid = chatid;
-	    }
+	@JsonIgnore
+	public String getBoardContent() {
+		return board_content;
+	}
 
-	    public Date getCreated() {
-	        return created;
-	    }
+	public void setBoardContent(String board_content) {
+		this.board_content = board_content;
+	}
 
-	    @PrePersist
-	    protected void onCreate() {
-	        created = new Date();
-	    }  
+	@JsonIgnore
+	public String getChatContent() {
+		return chat_content;
+	}
+
+	public void setChatContent(String chat_content) {
+		this.chat_content = chat_content;
+	}
+
+	public Date getCreated() {
+		return created;
+	}
+
+	@PrePersist
+	protected void onCreate() {
+		created = new Date();
+	}
 
 }

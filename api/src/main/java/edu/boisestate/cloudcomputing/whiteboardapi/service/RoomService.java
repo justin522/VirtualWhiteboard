@@ -1,7 +1,5 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.service;
 
-import java.util.ArrayList;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -14,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.boisestate.cloudcomputing.whiteboardapi.dao.RoomDao;
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.Room;
+import edu.boisestate.cloudcomputing.whiteboardapi.entity.RoomList;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomAlreadyExistsException;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomNotFoundException;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.ApiUtil;
@@ -97,7 +96,7 @@ public class RoomService {
 	@Path("/getrooms")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getRoomsList() throws JsonProcessingException {
-		ArrayList<Room> room = new ArrayList<Room>();
+		RoomList room = new RoomList();
 		String rooms = null;
 		try {
 			room = roomDao.getRoomsList();
