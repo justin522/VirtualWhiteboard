@@ -3,13 +3,14 @@ var express = require('express')
     , routes = require('./routes')
     , http = require('http')
     , path = require('path')
-    , redis = require('redis')
+    //, redis = require('redis')
+    , redis = require('socket.io-redis')	
     , session = require('express-session')
     , cookieParser = require('cookie-parser');
 
-
-
-
+var drawinginstructions = {};
+var clients = {};
+var messages = {};
 
 //var express = require('express');
 var app = express();
@@ -23,50 +24,71 @@ log.messages = [];
 log.drawings = [];
 log.links = [];
 
-/**NEW**/
-//io.on('connection',function(socket){
-	//console.log('wrong logged in');
-//});
-var RedisStore = require('connect-redis')(session),
+/*var RedisStore = require('connect-redis')(session),
 	rClient = redis.createClient(6379,'cs597-VirtualWhiteboardDB'),
-	sessionStore = new RedisStore({client:rClient});
-
+	sessionStore = new RedisStore({client:rClient});*/
 //app.set('port',process.env.PORT || 3000);
 //app.set('views',__dirname + '/www');
 //app.set('view engine','ejs');
 app.use(cookieParser('your secret here'));
-app.use(session({store:sessionStore, key:'server', secret:'your secret here',resave:true,saveUninitialized:true}));
+//app.use(session({store:sessionStore, key:'server', secret:'your secret here',resave:true,saveUninitialized:true}));
 
-//app.get('/',routes.index);
 
 app.use(express.static(__dirname + '/www')); 
-var SessionSockets = require('session.socket.io');
-var sessionSockets = new SessionSockets(io, sessionStore, cookieParser, 'server');
-//console.log('io ',io);
-//console.log('cookie ', cookieParser);
+//var SessionSockets = require('session.socket.io');
+//var sessionSockets = new SessionSockets(io, sessionStore, cookieParser, 'server');
 
 /**NEW REDIS CLIENTS**/
-var sub = redis.createClient(6379,'cs597-VirtualWhiteboardDB');
-var pub = redis.createClient(6379,'cs597-VirtualWhiteboardDB');
-sub.subscribe('msg');
-sub.subscribe('link');
-sub.subscribe('draw');
+//var sub = redis.createClient(6379,'cs597-VirtualWhiteboardDB');
+//var pub = redis.createClient(6379,'cs597-VirtualWhiteboardDB');
+var channel = "";
+//sub.subscribe('msg');
+//sub.subscribe('link');
+//sub.subscribe('draw');
 
 /*SOCKET DATA*/
-io.on('connection',function(socket){
+io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
+io.sockets.on('connection',function(socket){
 //sessionSockets.on('connection', function (err, socket, session) {
+	clients[socket.id]=socket;
+	
 	console.log("log in");
    // if(!session.user) return;
-	socket.on("msg",function(usr,m){
+	socket.on('room',function(userName,room){
+	//sub.subscribe(room);
+
+	socket.room = room;
+	socket.join(room);
+	//channel = room;
+	console.log('socektid ' +socket.id);
+	
+	//socket.join(room);
+	console.log(userName + " has joined this " + room); 
+	
+	if(typeof drawinginstructions[room] !== 'undefined'){
+			drawinginstructions[room].foreach(function(intruction){
+				//pub.publish(channel,instruction);			
+			}); 
+		}
+	});
+	/*sub.on('message',function (channel,message){
+		console.log('socketid ' + socket.id + ' room ' +socket.room);
+		console.log('channel '+ channel + "  " + 'msg '+message);
+		io.sockets.in(channel).emit('message',message);
+		//socket.send(message);
+	});*/
+	socket.on("message",function(usr,m){
 		//console.log("user");
 		var msg={};
 		msg.usr=usr;
 		msg.m=m;
 		log.messages.push(msg);
-		//io.emit("msg",usr,m); Now use pub.publish so all instances across servrs recieve
 		var reply = JSON.stringify({action:'message',user:usr,msg:m});
-		console.log(reply);
-		pub.publish('msg',reply);
+		io.emit("msg",reply); //Now use pub.publish so all instances across servrs recieve
+		
+		//console.log('reply ', reply);
+		console.log(channel);
+		//pub.publish(channel,reply);
 	});
 	socket.on("link",function(usr,type,linkname,url){
 		var link={};
@@ -80,7 +102,8 @@ io.on('connection',function(socket){
 		pub.publish('msg',reply);
 	});
 	socket.on('draw',function(usr,type,layer,data){
-		console.log("prevx: "+ prevX+" prevy: "	+ prevY + currX + currY);
+				var room = socket.rooms[1];
+		//console.log("prevx: "+ prevX+" prevy: "	+ prevY + currX + currY);
 		//We could do fancy database collection here and possibly add undo function
 		var draw = {};
 		draw.usr = usr;
@@ -92,13 +115,17 @@ io.on('connection',function(socket){
 		drawings[objectID]=draw;
 		drawings.push(draw);
 		//io.emit("draw",prevX,prevY,currX,currY);
-		var reply = JSON.stringify({action:'draw',prevX:prevX,prevY:prevY,currX:currX,currY:currY})
+		var reply = JSON.stringify({action:'draw',prevX:prevX,prevY:prevY,currX:currX,currY:currY,strokeColor:strokeColor,strokeWidth:strokeWidth})
+		if(typeof drawinginstructions[room] == 'undefined'){
+			drawinginstructions[room] = [];
+		}
+		drawinginstructions[room].push(reply);
 		pub.publish('draw',reply);
 	});
 
-	sub.on('message', function (channel, message) {
+	/*sub.on('message', function (channel, message) {
 		socket.emit(channel, message);
-	});
+	});*/
 });
 
 server.listen(3000, function(){

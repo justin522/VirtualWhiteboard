@@ -1,14 +1,20 @@
-
+var roomName = "";
 var host = window.location.host.split(':')[0];
 var socket = io.connect('http://'+host);
 $(document).ready(function(){
 //alert(socket);
 	$("#post-chat").click(function(){
-		socket.emit('msg',"Justin", $('#chat-input').val());
+		var msg = {type:'message',msg:$('#chat-input').val()};
+		socket.json.send(msg);
+		//socket.emit('msg',"Justin", $('#chat-input').val());
 		//alert("hey");
 		$('#chat-input').val('');
 	});
+$("#post-room").click(function(){
 
+		socket.emit('room','userName',$('#room-input').val());
+		roomName = $('#room-input').val();
+	});
 	$("#fillcolor").spectrum({
 		showAlpha: true,
 		allowEmpty:true,
