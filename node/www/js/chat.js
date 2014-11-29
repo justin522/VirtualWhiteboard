@@ -1,6 +1,6 @@
 //socket.emit('room','userName','roomName');
 socket.on('message',function(mess){
-	alert(mess);
+	//alert(mess);
 	var message = JSON.parse(mess);
 	var usr = message.user;
 	var msg = message.msg;

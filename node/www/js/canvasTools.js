@@ -28,7 +28,10 @@ function initCanvas() {
 }
 
 function draw() {
-	socket.emit('drawing',prevX,prevY,currX,currY);
+	//alert('draw');
+	var data = JSON.stringify
+({user:'user',type:'type',layer:'layer',prevX:prevX,prevY:prevY,currX:currX,currY:currY,strokeColor:strokeColor,strokeWidth:strokeWidth});
+	socket.emit('drawing',data);
 	/*ctx.beginPath();
 	ctx.moveTo(prevX, prevY);
 	ctx.lineTo(currX, currY);
@@ -46,8 +49,11 @@ function erase() {
 	}
 }
 socket.on("draw",function(drawData){
-
+	alert(drawData);
 	var draw = JSON.parse(drawData);
+	var user = draw.user;
+	var layer = draw.layer;
+	var type = draw.type;
 	var prevX = draw.prevX;
 	var prevY = draw.prevY;
 	var currX = draw.currX;

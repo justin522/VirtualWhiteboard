@@ -5,8 +5,8 @@ $(document).ready(function(){
 //alert(socket);
 	$("#post-chat").click(function(){
 		var msg = {type:'message',msg:$('#chat-input').val()};
-		socket.json.send(msg);
-		//socket.emit('msg',"Justin", $('#chat-input').val());
+		//socket.json.send(msg);
+		socket.emit('msg',"Justin", $('#chat-input').val());
 		//alert("hey");
 		$('#chat-input').val('');
 	});

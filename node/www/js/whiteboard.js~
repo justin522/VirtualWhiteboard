@@ -1,7 +1,6 @@
 var roomName = "";
 var host = window.location.host.split(':')[0];
 var socket = io.connect('http://'+host);
-this.socket.onmessage = this._onMessage;
 $(document).ready(function(){
 //alert(socket);
 	$("#post-chat").click(function(){
