@@ -57,7 +57,7 @@ io.sockets.on('connection',function(socket){
 	socket.on('room',function(userName,room){
 	//sub.subscribe(room);
 
-	socket.room = room;
+	//socket.room = room;
 	socket.join(room);
 	//channel = room;
 	console.log('socektid ' +socket.id);
@@ -67,6 +67,7 @@ io.sockets.on('connection',function(socket){
 	
 	if(typeof drawinginstructions[room] !== 'undefined'){
 			drawinginstructions[room].foreach(function(intruction){
+				socket.emit('draw',instruction);
 				//pub.publish(channel,instruction);			
 			}); 
 		}
@@ -78,15 +79,16 @@ io.sockets.on('connection',function(socket){
 		//socket.send(message);
 	});*/
 	socket.on("message",function(usr,m){
+		var room = socket.rooms[1];
 		//console.log("user");
 		var msg={};
 		msg.usr=usr;
 		msg.m=m;
 		log.messages.push(msg);
 		var reply = JSON.stringify({action:'message',user:usr,msg:m});
-		io.emit("message",reply); //Now use pub.publish so all instances across servrs recieve
-		
-		//console.log('reply ', reply);
+		//io.emit("message",reply); //Now use pub.publish so all instances across servrs recieve
+		io.to(room).emit('message',reply);
+		console.log('room '+ room + ' reply ', reply);
 		console.log(channel);
 		//pub.publish(channel,reply);
 	});
@@ -102,9 +104,7 @@ io.sockets.on('connection',function(socket){
 		pub.publish('msg',reply);
 	});
 	socket.on('draw',function(usr,type,layer,data){
-				var room = socket.rooms[1];
-		//console.log("prevx: "+ prevX+" prevy: "	+ prevY + currX + currY);
-		//We could do fancy database collection here and possibly add undo function
+		var room = socket.rooms[1];
 		var draw = {};
 		draw.usr = usr;
 		draw.layer = layer;
@@ -120,7 +120,9 @@ io.sockets.on('connection',function(socket){
 			drawinginstructions[room] = [];
 		}
 		drawinginstructions[room].push(reply);
-		pub.publish('draw',reply);
+			console.log('room: ' + room + ' instruct ' + reply);
+		io.to(room).emit('draw',reply);
+		//pub.publish('draw',reply);
 	});
 
 	/*sub.on('message', function (channel, message) {
