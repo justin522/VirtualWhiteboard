@@ -7,7 +7,8 @@
     <properties>
         <!-- Configuring JDBC properties -->
         <!-- TODO: update DB host to actual host in cloud -->
-        <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost/whiteboard" />
+        <property name="javax.persistence.jdbc.url" value="jdbc:mysql://cs597-VirtualWhiteboardDB/whiteboard" />
+        <!--<property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost/whiteboard" />-->
         <property name="javax.persistence.jdbc.user" value="whiteboard" />
         <property name="javax.persistence.jdbc.password" value="whiteboard" />
         <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />

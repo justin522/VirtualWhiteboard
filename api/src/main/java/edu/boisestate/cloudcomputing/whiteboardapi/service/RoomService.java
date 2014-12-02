@@ -149,6 +149,3 @@ public class RoomService {
         return om.writeValueAsString(whiteboardEdit);
     }
 }
-
-// curl -X POST -H "Content-type: application/json" -d '{"action":"message","user":1,"msg":"yeah buddy","room":1}' http://localhost:8081/room/updatechat
-// curl -X POST -H "Content-type: application/json" -d '{"action":"draw","user":1,"type":"baz","layer":"foo","prevX":14,"prevY":12,"currX":42,"currY":45,"strokeColor":"green","strokeWidth":5,"room":1}' http://localhost:8081/room/updateboard
