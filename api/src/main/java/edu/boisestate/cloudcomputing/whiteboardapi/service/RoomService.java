@@ -1,21 +1,21 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.service;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.boisestate.cloudcomputing.whiteboardapi.dao.ChatDao;
 import edu.boisestate.cloudcomputing.whiteboardapi.dao.RoomDao;
-import edu.boisestate.cloudcomputing.whiteboardapi.entity.Room;
-import edu.boisestate.cloudcomputing.whiteboardapi.entity.RoomList;
+import edu.boisestate.cloudcomputing.whiteboardapi.dao.WhiteboardDao;
+import edu.boisestate.cloudcomputing.whiteboardapi.entity.*;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomAlreadyExistsException;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomNotFoundException;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.ApiUtil;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Handles API requests related to room, whiteboard and chat.
@@ -24,6 +24,8 @@ import edu.boisestate.cloudcomputing.whiteboardapi.util.ApiUtil;
 public class RoomService {
 	private ObjectMapper om = new ObjectMapper();
 	private RoomDao roomDao = new RoomDao();
+    private ChatDao chatDao = new ChatDao();
+    private WhiteboardDao whiteboardDao = new WhiteboardDao();
 
 	/**
 	 * Creates a new room with the given roomname.
@@ -60,7 +62,18 @@ public class RoomService {
 	 * @return room detail with the given roomname.
 	 */
 	private Room getRoomByName(String roomname) {
-		return roomDao.getRoomByName(roomname);
+		Room room = roomDao.getRoomByName(roomname);
+        if (room == null) {
+            return null;
+        }
+
+        List<ChatMessage> chat = chatDao.getMessagesByRoom(room.getId());
+        room.setChat(chat);
+
+        List<WhiteboardEdit> whiteboard = whiteboardDao.getEditsByRoom(room.getId());
+        room.setWhiteboard(whiteboard);
+
+        return room;
 	}
 
 	/**
@@ -96,14 +109,46 @@ public class RoomService {
 	@Path("/getrooms")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getRoomsList() throws JsonProcessingException {
-		RoomList room = new RoomList();
-		String rooms = null;
-		try {
-			room = roomDao.getRoomsList();
-			rooms = om.writeValueAsString(room);
-		} catch (Exception e) {
-			throw e;
-		}
-		return rooms;
+        List<Room> rooms = roomDao.getRoomsList();
+        RoomList roomList = new RoomList(rooms);
+
+        return om.writeValueAsString(roomList);
 	}
+
+    /**
+     * Updates a room's chat with a new message.
+     *
+     * @param chatMessage The new message.
+     * @return The newly saved message.
+     * @throws IOException
+     */
+    @POST
+    @Path("/updatechat")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String updateChat(ChatMessage chatMessage) throws IOException {
+        chatDao.saveChatMessage(chatMessage);
+
+        return om.writeValueAsString(chatMessage);
+    }
+
+    /**
+     * Updates a room's whiteboard with a new edit.
+     *
+     * @param whiteboardEdit The new edit.
+     * @return The newly saved edit.
+     * @throws IOException
+     */
+    @POST
+    @Path("/updateboard")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String updateBoard(WhiteboardEdit whiteboardEdit) throws IOException {
+        whiteboardDao.saveWhiteboardEdit(whiteboardEdit);
+
+        return om.writeValueAsString(whiteboardEdit);
+    }
 }
+
+// curl -X POST -H "Content-type: application/json" -d '{"action":"message","user":1,"msg":"yeah buddy","room":1}' http://localhost:8081/room/updatechat
+// curl -X POST -H "Content-type: application/json" -d '{"action":"draw","user":1,"type":"baz","layer":"foo","prevX":14,"prevY":12,"currX":42,"currY":45,"strokeColor":"green","strokeWidth":5,"room":1}' http://localhost:8081/room/updateboard

@@ -4,8 +4,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.Room;
-import edu.boisestate.cloudcomputing.whiteboardapi.entity.RoomList;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.DbConnection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handles DB reads/writes for the Room table.
@@ -117,12 +119,12 @@ public class RoomDao {
 	 * 
 	 * @return list of available Rooms
 	 */
-	public RoomList getRoomsList() {
+	public List<Room> getRoomsList() {
 		try {
-			return (RoomList) em.createQuery("SELECT r FROM Room r", Room.class)
+			return em.createQuery("SELECT r FROM Room r ORDER BY r.roomname", Room.class)
 					.getResultList();
 		} catch (NoResultException ex) {
-			return null;
+			return new ArrayList<>();
 		}
 	}
 }

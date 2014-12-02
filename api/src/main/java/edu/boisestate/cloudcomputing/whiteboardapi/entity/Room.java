@@ -1,17 +1,9 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.entity;
 
 import java.util.Date;
+import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.PrePersist;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.*;
 
 @Entity
 @Table
@@ -24,13 +16,13 @@ public class Room {
 	private String roomname;
 
 	@Column
-	private String board_content;
-
-	@Column
-	private String chat_content;
-
-	@Column
 	private Long userid;
+
+    @Transient
+    private List<ChatMessage> chat;
+
+    @Transient
+    private List<WhiteboardEdit> whiteboard;
 
 	@Column(name = "created", nullable = false, updatable = false)
 	@Temporal(TemporalType.TIMESTAMP)
@@ -56,25 +48,23 @@ public class Room {
 		this.roomname = roomname;
 	}
 
-	@JsonIgnore
-	public String getBoardContent() {
-		return board_content;
-	}
+    public List<ChatMessage> getChat() {
+        return chat;
+    }
 
-	public void setBoardContent(String board_content) {
-		this.board_content = board_content;
-	}
+    public void setChat(List<ChatMessage> chat) {
+        this.chat = chat;
+    }
 
-	@JsonIgnore
-	public String getChatContent() {
-		return chat_content;
-	}
+    public List<WhiteboardEdit> getWhiteboard() {
+        return whiteboard;
+    }
 
-	public void setChatContent(String chat_content) {
-		this.chat_content = chat_content;
-	}
+    public void setWhiteboard(List<WhiteboardEdit> whiteboard) {
+        this.whiteboard = whiteboard;
+    }
 
-	public Date getCreated() {
+    public Date getCreated() {
 		return created;
 	}
 
