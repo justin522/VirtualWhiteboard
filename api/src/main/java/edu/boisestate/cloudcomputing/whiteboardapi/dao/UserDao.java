@@ -34,6 +34,16 @@ public class UserDao {
     }
 
     /**
+     * Creates a new user with a blank password.
+     *
+     * @param username The username for the new user.
+     * @return The newly created user object.
+     */
+    public User createUser(String username) {
+        return createUser(username, "");
+    }
+
+    /**
      * Returns a user with the given username or null otherwise.
      *
      * @param username The username to look up.

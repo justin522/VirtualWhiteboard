@@ -32,18 +32,17 @@ public class UserService {
      * @throws JsonProcessingException
      */
     @POST
-    @Path("/create/{username}/password/{password}")
+    @Path("/create/{username}")
     @Produces(MediaType.APPLICATION_JSON)
     public String createUser(
-            @PathParam("username") String username,
-            @PathParam("password") String password
+            @PathParam("username") String username
     ) throws JsonProcessingException {
         User user = getUserByName(username);
         if (user != null) {
             throw new UserAlreadyExistsException(ApiUtil.formatError("User already exists"));
         }
 
-        user = userDao.createUser(username, password);
+        user = userDao.createUser(username);
         return om.writeValueAsString(user);
     }
 
