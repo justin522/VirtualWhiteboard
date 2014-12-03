@@ -71,16 +71,10 @@ function save() {
 }
 
 
-      function getMousePos(canvas, e) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        };
-      }
 
-function findxy(res, e) {
-	var mousePos = getMousePos(canvas, e);
+
+function findxy(object, e) {
+	var mousePos = getMousePosition(canvas, e);
 	if (res == 'down') {
 		console.log(mousePos.x);
 		prevX = currX;

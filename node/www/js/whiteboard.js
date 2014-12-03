@@ -163,10 +163,12 @@ $(document).ready(function(){
 		disabled: true
 	});
 	
-//replace "fakerooms.txt" with rooms endpoint
-	$.get( "fakerooms.txt", function( data ) {
-		var rooms=data.split(",");
-		for(var room in rooms)$("<option>"+rooms[room]+"</option>").appendTo("#room-select");
+//replace "fakerooms.json" with rooms endpoint
+	$.getJSON( "fakerooms.json", function( data ) {
+		//var rooms=data.split(",");
+		//for(var room in rooms)$("<option>"+rooms[room]+"</option>").appendTo("#room-select");
+		var rooms=data.rooms;
+		for(var room in rooms)$("<option>"+rooms[room].roomName+"</option>").appendTo("#room-select");
 	});
 	$( "#signin" ).dialog({
 		closeOnEscape: false,
@@ -206,3 +208,11 @@ socket.on("draw",function(drawData){
 	console.log(data);
 	if(data[0]==="canvas")canvasDraw(data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
 });
+
+function getMousePosition(object, e) {
+	var rect = canvas.getBoundingClientRect();
+	return {
+		x: e.clientX - rect.left,
+		y: e.clientY - rect.top
+	};
+}
