@@ -1,19 +1,15 @@
 var roomName = "";
 var host = window.location.host.split(':')[0];
 var socket = io.connect('http://'+host);
+var userName;
 $(document).ready(function(){
 //alert(socket);
 	$("#post-chat").click(function(){
 		var msg = {type:'message',msg:$('#chat-input').val()};
 		//socket.json.send(msg);
-		socket.emit('msg',"Justin", $('#chat-input').val());
+		socket.emit('msg',$('#input-usr').val(), $('#chat-input').val());
 		//alert("hey");
 		$('#chat-input').val('');
-	});
-$("#post-room").click(function(){
-
-		socket.emit('room','userName',$('#room-input').val());
-		roomName = $('#room-input').val();
 	});
 	$("#fillcolor").spectrum({
 		showAlpha: true,
@@ -63,9 +59,7 @@ $("#post-room").click(function(){
 		$("#sample").attr("stroke-width",$(this).val());
 	});
 	$("#tabs").tabs();
-	
-	
-	
+	$("#whiteboard").tabs();
 	$("#drawing-tools>input").click(function(){
 		if(!$(this).is(":checked")){
 			$(this).prop('checked',true).button( "refresh" );
@@ -169,6 +163,46 @@ $("#post-room").click(function(){
 		disabled: true
 	});
 	
+//replace "fakerooms.txt" with rooms endpoint
+	$.get( "fakerooms.txt", function( data ) {
+		var rooms=data.split(",");
+		for(var room in rooms)$("<option>"+rooms[room]+"</option>").appendTo("#room-select");
+	});
+	$( "#signin" ).dialog({
+		closeOnEscape: false,
+		modal: true,
+		buttons: {
+			Enter: function() {
+				var password=$('#input-password').val();
+				var user=$('#input-usr').val();
+				var room=$('#room-input').val();
+				if(room!==""&&user!==""){
+					userName=$('#input-usr').val();
+					socket.emit('room', user, room);
+//replace "fakesignin.txt" with signin endpoint
+					$.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
+					$( this ).dialog( "close" );
+				}else if(room==="")alert("Room name cannot be blank");
+				else alert("User name cannot be blank");
+			}
+		},
+		open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog || ui).hide();}
+	});
+	$("#room-select").change(function(){
+		if(this.value==="new"){
+			$("#room-input").val("").show();
+		}else{
+			$("#room-input").val(this.value).hide();
+		}
+	});
+	
 	//replace later
 	initCanvas();
+});
+
+socket.on("draw",function(drawData){
+	var draw = JSON.parse(drawData);
+	var data = draw.data.split("|");
+	console.log(data);
+	if(data[0]==="canvas")canvasDraw(data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
 });

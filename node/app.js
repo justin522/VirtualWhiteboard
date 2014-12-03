@@ -24,7 +24,8 @@ app.use(express.static(__dirname + '/www'));
 
 
 /*SOCKET DATA*/
-io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
+//io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
+io.adapter(redis({host:'localhost',port:6379}));
 io.sockets.on('connection',function(socket){
 	clients[socket.id]=socket;	
 	console.log("log in");
@@ -33,7 +34,7 @@ io.sockets.on('connection',function(socket){
 	socket.join(room);
 	console.log('socektid ' +socket.id);
 
-	console.log(userName + " has joined this " + room); 
+	console.log(userName + " has joined " + room); 
 	
 		if(typeof drawinginstructions[room] !== 'undefined'){
 			for (var key in drawinginstructions[room])
@@ -65,22 +66,11 @@ io.sockets.on('connection',function(socket){
 		io.to(room).emit('message',reply);
 		console.log('room '+ room + ' reply ', reply);
 	});
-	socket.on("link",function(usr,type,linkname,url){
-		var room = socket.rooms[1];
-		var link={};
-		link.usr=usr;
-		link.type=type;
-		link.name=linkname;
-		link.url=url;
-		log.links.push(link);
-		var reply = JSON.stringify({action:'link',user:usr,link:type+": <a href='"+url+"'>"+linkname+"</a>."})
-		io.to(room).emit('link',reply);
-	});
 	socket.on('drawing',function(data){
 		var drawing = JSON.parse(data);
 		var room = socket.rooms[1];
-		var reply = JSON.stringify({action:'draw',user:drawing.user,type:drawing.type,layer:drawing.layer,prevX:drawing.prevX,prevY:drawing.prevY,currX:drawing.currX,
-			currY:drawing.currY,strokeColor:drawing.strokeColor,strokeWidth:drawing.strokeWidth})
+		//var reply = JSON.stringify({action:'draw',user:drawing.user,type:drawing.type,layer:drawing.layer,prevX:drawing.prevX,prevY:drawing.prevY,currX:drawing.currX,currY:drawing.currY,strokeColor:drawing.strokeColor,strokeWidth:drawing.strokeWidth});
+		var reply = JSON.stringify({action:'draw',user:drawing.user,data:drawing.data});
 		if(typeof drawinginstructions[room] == 'undefined'){
 			drawinginstructions[room] = [];
 		}

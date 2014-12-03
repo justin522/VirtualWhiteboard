@@ -69,6 +69,9 @@
 			svg{
 				fill:white;
 			}
+			#svg0{
+				display: none;
+			}
 			.layer{
 				width:700px;
 				height: 500px;
@@ -123,6 +126,12 @@
 				color:blue;
 				font-style: italic;
 			}
+			#signin input,#signin select{
+				color:black;
+			}
+			.ui-dialog-titlebar-close {
+				visibility: hidden;
+			}
 		</style>
 		<script src="/socket.io/socket.io.js"></script>
 		<script src='lib/jquery.js'></script>
@@ -136,8 +145,8 @@
 	<body>
 		<div>
 			<div id="whiteboard">
-				<!--<svg class="layer"></svg>-->
-				<canvas class="layer" id="layer0"></canvas>
+				<canvas class="layer" id="svg0"></canvas>
+				<canvas class="layer" id="canvas0"></canvas>
 			</div>
 			<div id="tabs">
 				<ul>
@@ -174,7 +183,7 @@
 				</div>
 				<div id="layers">
 					<div class="display-container">
-						
+						<h2>Not yet implemented</h2>
 					</div>
 				</div>
 				<div id="links">
@@ -183,22 +192,27 @@
 					</div>
 				</div>
 				<div id="users">
-					<div class="display-container">
-						invite users;
-					</div>
+						<h2>Not yet implemented</h2>
 				</div>
 			</div>
 			<div id="chat" class="ui-widget ui-widget-content ui-corner-all">
 				<div id="chat-display"></div>
 				<div id="chat-tools">
 					<input id="chat-input" type="text" />
-				<input id="post-room" type="button" value="Room" />
-						<input id="room-input" type="text" value="room" />
 					<input id="post-chat" type="button" value="Post" /><br/>
 				</div>
 			</div>
 		</div>
 		<!--Remove later-->
 		 <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
+		 <div id="signin" title="Select Room">
+				Room:
+				<select id="room-select">
+					<option value="new">New Room</option>
+				</select><br />
+				<div id="post-room"><input id="room-input" type="text" /></div>
+				User name:<input id="input-usr" type="text" value="Guest" /><br />
+				Password: <input id="input-password" type="password" /><br />
+		 </div>
 	</body>
 </html>
