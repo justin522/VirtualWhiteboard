@@ -4,6 +4,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.boisestate.cloudcomputing.whiteboardapi.dao.ChatDao;
@@ -15,6 +16,7 @@ import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomNotFoundExcepti
 import edu.boisestate.cloudcomputing.whiteboardapi.util.ApiUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +32,7 @@ public class RoomService {
 
 	/**
 	 * Creates a new room with the given roomname.
-	 * 
+	 *
 	 * @param roomname
 	 *            The roomname for the new room.
 	 * @param userid
@@ -57,7 +59,7 @@ public class RoomService {
 
 	/**
 	 * Gets the room deatil for given roomname
-	 * 
+	 *
 	 * @param roomname
 	 *            The roomname to look up.
 	 * @return room detail with the given roomname.
@@ -75,21 +77,17 @@ public class RoomService {
 					ApiUtil.formatError("Room not found"));
 		}
 
-        List<ChatMessage> chat = chatDao.getMessagesByRoom(room.getId());
-        for (ChatMessage message : chat) {
-            User user = userService.getUserById(message.getUserid());
-            message.setUser(user.getUsername());
-            message.setRoom(roomname);
-            message.setData(om.readTree(message.getDataString()));
+        List<JsonNode> chat = new ArrayList<>();
+        List<ChatMessage> messages = chatDao.getMessagesByRoom(room.getId());
+        for (ChatMessage message : messages) {
+            chat.add(om.readTree(message.getData()));
         }
         room.setChat(chat);
 
-        List<WhiteboardEdit> whiteboard = whiteboardDao.getEditsByRoom(room.getId());
-        for (WhiteboardEdit edit : whiteboard) {
-            User user = userService.getUserById(edit.getUserid());
-            edit.setUser(user.getUsername());
-            edit.setRoom(roomname);
-            edit.setData(om.readTree(edit.getDataString()));
+        List<JsonNode> whiteboard = new ArrayList<>();
+        List<WhiteboardEdit> edits = whiteboardDao.getEditsByRoom(room.getId());
+        for (WhiteboardEdit edit : edits) {
+            whiteboard.add(om.readTree(edit.getData()));
         }
         room.setWhiteboard(whiteboard);
 
@@ -98,7 +96,7 @@ public class RoomService {
 
 	/**
 	 * To fetch all available Rooms
-	 * 
+	 *
 	 * @return JSON of all available Rooms
 	 * @throws JsonProcessingException
 	 */
@@ -115,21 +113,27 @@ public class RoomService {
     /**
      * Updates a room's chat with a new message.
      *
-     * @param chatMessage The new message.
+     * @param json The new message in JSON.
+     * @param roomname The room in which the message was posted.
+     * @param username The user who posted the message.
      * @return The newly saved message.
      * @throws IOException
      */
     @POST
-    @Path("/updatechat")
+    @Path("/updatechat/{room}/user/{user}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String updateChat(ChatMessage chatMessage) throws IOException {
-        User user = userService.getUserByName(chatMessage.getUser());
-        Room room = roomDao.getRoomByName(chatMessage.getRoom());
+    public String updateChat(JsonNode json,
+                             @PathParam("room") String roomname,
+                             @PathParam("user") String username
+    ) throws IOException {
+        Room room = roomDao.getRoomByName(roomname);
+        User user = userService.getUserByName(username);
 
+        ChatMessage chatMessage = new ChatMessage();
         chatMessage.setUserid(user.getId());
         chatMessage.setRoomid(room.getId());
-        chatMessage.setDataString(chatMessage.getData().toString());
+        chatMessage.setData(json.toString());
 
         chatDao.saveChatMessage(chatMessage);
 
@@ -139,21 +143,27 @@ public class RoomService {
     /**
      * Updates a room's whiteboard with a new edit.
      *
-     * @param whiteboardEdit The new edit.
+     * @param json The new edit in JSON.
+     * @param roomname The room in which the edit was made.
+     * @param username The user who made the edit.
      * @return The newly saved edit.
      * @throws IOException
      */
     @POST
-    @Path("/updateboard")
+    @Path("/updateboard/{room}/user/{user}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String updateBoard(WhiteboardEdit whiteboardEdit) throws IOException {
-        User user = userService.getUserByName(whiteboardEdit.getUser());
-        Room room = roomDao.getRoomByName(whiteboardEdit.getRoom());
+    public String updateBoard(JsonNode json,
+                              @PathParam("room") String roomname,
+                              @PathParam("user") String username
+    ) throws IOException {
+        Room room = roomDao.getRoomByName(roomname);
+        User user = userService.getUserByName(username);
 
-        whiteboardEdit.setUserid(user.getId());
+        WhiteboardEdit whiteboardEdit = new WhiteboardEdit();
         whiteboardEdit.setRoomid(room.getId());
-        whiteboardEdit.setDataString(whiteboardEdit.getData().toString());
+        whiteboardEdit.setUserid(user.getId());
+        whiteboardEdit.setData(json.toString());
 
         whiteboardDao.saveWhiteboardEdit(whiteboardEdit);
 

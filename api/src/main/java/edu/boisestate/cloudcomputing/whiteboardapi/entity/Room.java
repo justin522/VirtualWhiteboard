@@ -1,5 +1,7 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.Date;
 import java.util.List;
 
@@ -19,10 +21,10 @@ public class Room {
 	private Long userid;
 
     @Transient
-    private List<ChatMessage> chat;
+    private List<JsonNode> chat;
 
     @Transient
-    private List<WhiteboardEdit> whiteboard;
+    private List<JsonNode> whiteboard;
 
 	@Column(name = "created", nullable = false, updatable = false)
 	@Temporal(TemporalType.TIMESTAMP)
@@ -48,19 +50,19 @@ public class Room {
 		this.roomname = roomname;
 	}
 
-    public List<ChatMessage> getChat() {
+    public List<JsonNode> getChat() {
         return chat;
     }
 
-    public void setChat(List<ChatMessage> chat) {
+    public void setChat(List<JsonNode> chat) {
         this.chat = chat;
     }
 
-    public List<WhiteboardEdit> getWhiteboard() {
+    public List<JsonNode> getWhiteboard() {
         return whiteboard;
     }
 
-    public void setWhiteboard(List<WhiteboardEdit> whiteboard) {
+    public void setWhiteboard(List<JsonNode> whiteboard) {
         this.whiteboard = whiteboard;
     }
 
