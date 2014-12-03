@@ -15,8 +15,11 @@ public class WhiteboardEdit {
     @Transient
     private String action;
 
-    @Column(name = "userid")
-    private Long user;
+    @Column
+    private Long userid;
+
+    @Transient
+    private String user;
 
     @Column
     private String type;
@@ -42,8 +45,11 @@ public class WhiteboardEdit {
     @Column
     private Integer strokeWidth;
 
-    @Column(name = "roomid")
-    private Long room;
+    @Column
+    private Long roomid;
+
+    @Transient
+    private String room;
 
     @Column(name = "created", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -61,11 +67,20 @@ public class WhiteboardEdit {
         return "draw";
     }
 
-    public Long getUser() {
+    @JsonIgnore
+    public Long getUserid() {
+        return userid;
+    }
+
+    public void setUserid(Long userid) {
+        this.userid = userid;
+    }
+
+    public String getUser() {
         return user;
     }
 
-    public void setUser(Long user) {
+    public void setUser(String user) {
         this.user = user;
     }
 
@@ -133,11 +148,20 @@ public class WhiteboardEdit {
         this.strokeWidth = strokeWidth;
     }
 
-    public Long getRoom() {
+    @JsonIgnore
+    public Long getRoomid() {
+        return roomid;
+    }
+
+    public void setRoomid(Long roomid) {
+        this.roomid = roomid;
+    }
+
+    public String getRoom() {
         return room;
     }
 
-    public void setRoom(Long room) {
+    public void setRoom(String room) {
         this.room = room;
     }
 

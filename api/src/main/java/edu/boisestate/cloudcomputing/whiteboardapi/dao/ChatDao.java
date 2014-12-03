@@ -26,7 +26,7 @@ public class ChatDao {
 
     public List<ChatMessage> getMessagesByRoom(Long roomid) {
         try {
-            return em.createQuery("SELECT cm from ChatMessage cm WHERE cm.room = :roomid ORDER BY cm.created", ChatMessage.class)
+            return em.createQuery("SELECT cm from ChatMessage cm WHERE cm.roomid = :roomid ORDER BY cm.created", ChatMessage.class)
                     .setParameter("roomid", roomid)
                     .getResultList();
         } catch (NoResultException e) {
@@ -35,7 +35,7 @@ public class ChatDao {
     }
 
     public void deleteMessagesByRoom(Long roomid) {
-        em.createQuery("DELETE FROM ChatMessage cm WHERE cm.room = :roomid")
+        em.createQuery("DELETE FROM ChatMessage cm WHERE cm.roomid = :roomid")
                 .setParameter("roomid", roomid)
                 .executeUpdate();
     }

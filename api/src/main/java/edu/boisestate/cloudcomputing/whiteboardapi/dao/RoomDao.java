@@ -79,42 +79,6 @@ public class RoomDao {
 	}
 
 	/**
-	 * Get the Board Content of a particular Room
-	 * 
-	 * @param roomid
-	 *            search by roomid
-	 * @return the WhiteBoard detail of a room
-	 */
-	public Room getBoardContentByRoom(Long roomid) {
-		try {
-			return em
-					.createQuery("SELECT r FROM Room r WHERE r.id = :roomid",
-							Room.class).setParameter("roomid", roomid)
-					.getSingleResult();
-		} catch (NoResultException ex) {
-			return null;
-		}
-	}
-
-	/**
-	 * Get the Chat Content of a particular Room
-	 * 
-	 * @param roomid
-	 *            search by roomid
-	 * @return the Chat detail of a room
-	 */
-	public Room getChatContentByRoom(Long roomid) {
-		try {
-			return em
-					.createQuery("SELECT r FROM Room r WHERE r.id = :roomid",
-							Room.class).setParameter("roomid", roomid)
-					.getSingleResult();
-		} catch (NoResultException ex) {
-			return null;
-		}
-	}
-
-	/**
 	 * To list all available Rooms
 	 * 
 	 * @return list of available Rooms

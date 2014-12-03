@@ -23,6 +23,7 @@ import java.util.List;
 @Path("/room")
 public class RoomService {
 	private ObjectMapper om = new ObjectMapper();
+    private UserService userService = new UserService();
 	private RoomDao roomDao = new RoomDao();
     private ChatDao chatDao = new ChatDao();
     private WhiteboardDao whiteboardDao = new WhiteboardDao();
@@ -44,7 +45,7 @@ public class RoomService {
 	public String createRoom(@PathParam("roomname") String roomname,
 			@PathParam("userid") Long userid) throws JsonProcessingException,
 			RoomAlreadyExistsException {
-		Room room = getRoomByName(roomname);
+		Room room = roomDao.getRoomByName(roomname);
 		if (room != null) {
 			throw new RoomAlreadyExistsException(
 					ApiUtil.formatError("Room already exists"));
@@ -52,28 +53,6 @@ public class RoomService {
 
 		room = roomDao.createRoom(roomname, userid);
 		return om.writeValueAsString(room);
-	}
-
-	/**
-	 * Gets the room with the given roomname
-	 * 
-	 * @param roomname
-	 *            The roomname to look up.
-	 * @return room detail with the given roomname.
-	 */
-	private Room getRoomByName(String roomname) {
-		Room room = roomDao.getRoomByName(roomname);
-        if (room == null) {
-            return null;
-        }
-
-        List<ChatMessage> chat = chatDao.getMessagesByRoom(room.getId());
-        room.setChat(chat);
-
-        List<WhiteboardEdit> whiteboard = whiteboardDao.getEditsByRoom(room.getId());
-        room.setWhiteboard(whiteboard);
-
-        return room;
 	}
 
 	/**
@@ -90,11 +69,27 @@ public class RoomService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getRoomDetailByName(@PathParam("roomname") String roomname)
 			throws JsonProcessingException, RoomNotFoundException {
-		Room room = getRoomByName(roomname);
+		Room room = roomDao.getRoomByName(roomname);
 		if (room == null) {
 			throw new RoomNotFoundException(
 					ApiUtil.formatError("Room not found"));
 		}
+
+        List<ChatMessage> chat = chatDao.getMessagesByRoom(room.getId());
+        for (ChatMessage message : chat) {
+            User user = userService.getUserById(message.getUserid());
+            message.setUser(user.getUsername());
+            message.setRoom(roomname);
+        }
+        room.setChat(chat);
+
+        List<WhiteboardEdit> whiteboard = whiteboardDao.getEditsByRoom(room.getId());
+        for (WhiteboardEdit edit : whiteboard) {
+            User user = userService.getUserById(edit.getUserid());
+            edit.setUser(user.getUsername());
+            edit.setRoom(roomname);
+        }
+        room.setWhiteboard(whiteboard);
 
 		return om.writeValueAsString(room);
 	}
@@ -127,6 +122,12 @@ public class RoomService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String updateChat(ChatMessage chatMessage) throws IOException {
+        User user = userService.getUserByName(chatMessage.getUser());
+        chatMessage.setUserid(user.getId());
+
+        Room room = roomDao.getRoomByName(chatMessage.getRoom());
+        chatMessage.setRoomid(room.getId());
+
         chatDao.saveChatMessage(chatMessage);
 
         return om.writeValueAsString(chatMessage);
@@ -144,6 +145,12 @@ public class RoomService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String updateBoard(WhiteboardEdit whiteboardEdit) throws IOException {
+        User user = userService.getUserByName(whiteboardEdit.getUser());
+        whiteboardEdit.setUserid(user.getId());
+
+        Room room = roomDao.getRoomByName(whiteboardEdit.getRoom());
+        whiteboardEdit.setRoomid(room.getId());
+
         whiteboardDao.saveWhiteboardEdit(whiteboardEdit);
 
         return om.writeValueAsString(whiteboardEdit);

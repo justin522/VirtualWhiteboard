@@ -26,7 +26,7 @@ public class WhiteboardDao {
 
     public List<WhiteboardEdit> getEditsByRoom(Long roomid) {
         try {
-            return em.createQuery("SELECT we FROM WhiteboardEdit we WHERE we.room = :roomid ORDER BY created", WhiteboardEdit.class)
+            return em.createQuery("SELECT we FROM WhiteboardEdit we WHERE we.roomid = :roomid ORDER BY created", WhiteboardEdit.class)
                     .setParameter("roomid", roomid)
                     .getResultList();
         } catch (NoResultException e) {
@@ -35,7 +35,7 @@ public class WhiteboardDao {
     }
 
     public void deleteEditsByRoom(Long roomid) {
-        em.createQuery("DELETE FROM WhiteboardEdit we WHERE we.room = :roomid")
+        em.createQuery("DELETE FROM WhiteboardEdit we WHERE we.roomid = :roomid")
                 .setParameter("roomid", roomid)
                 .executeUpdate();
     }
