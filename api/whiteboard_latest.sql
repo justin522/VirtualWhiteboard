@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 5.5.40, for debian-linux-gnu (i686)
+-- MySQL dump 10.13  Distrib 5.5.40, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: whiteboard
 -- ------------------------------------------------------
@@ -25,11 +25,11 @@ DROP TABLE IF EXISTS `ChatMessage`;
 CREATE TABLE `ChatMessage` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `userid` bigint(20) NOT NULL,
-  `message` varchar(250) DEFAULT NULL,
   `roomid` bigint(20) NOT NULL,
+  `data` text,
   `created` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +46,7 @@ CREATE TABLE `Room` (
   `created` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `roomname` (`roomname`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -63,7 +63,7 @@ CREATE TABLE `User` (
   `created` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,18 +76,11 @@ DROP TABLE IF EXISTS `WhiteboardEdit`;
 CREATE TABLE `WhiteboardEdit` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `userid` bigint(20) NOT NULL,
-  `type` varchar(50) DEFAULT NULL,
-  `layer` varchar(50) DEFAULT NULL,
-  `prevX` int(11) DEFAULT NULL,
-  `prevY` int(11) DEFAULT NULL,
-  `currX` int(11) DEFAULT NULL,
-  `currY` int(11) DEFAULT NULL,
-  `strokeColor` varchar(50) DEFAULT NULL,
-  `strokeWidth` int(11) DEFAULT NULL,
   `roomid` bigint(20) NOT NULL,
+  `data` text,
   `created` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -99,4 +92,4 @@ CREATE TABLE `WhiteboardEdit` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-12-02  2:21:43
+-- Dump completed on 2014-12-03 12:06:33
