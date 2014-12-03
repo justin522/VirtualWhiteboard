@@ -13,6 +13,7 @@ import edu.boisestate.cloudcomputing.whiteboardapi.dao.WhiteboardDao;
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.*;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomAlreadyExistsException;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.RoomNotFoundException;
+import edu.boisestate.cloudcomputing.whiteboardapi.exception.UserNotFoundException;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.ApiUtil;
 
 import java.io.IOException;
@@ -128,7 +129,14 @@ public class RoomService {
                              @PathParam("user") String username
     ) throws IOException {
         Room room = roomDao.getRoomByName(roomname);
+        if (room == null) {
+            throw new RoomNotFoundException(ApiUtil.formatError("Room not found"));
+        }
+
         User user = userService.getUserByName(username);
+        if (user == null) {
+            throw new UserNotFoundException(ApiUtil.formatError("User not found"));
+        }
 
         ChatMessage chatMessage = new ChatMessage();
         chatMessage.setUserid(user.getId());
@@ -158,7 +166,14 @@ public class RoomService {
                               @PathParam("user") String username
     ) throws IOException {
         Room room = roomDao.getRoomByName(roomname);
+        if (room == null) {
+            throw new RoomNotFoundException(ApiUtil.formatError("Room not found"));
+        }
+
         User user = userService.getUserByName(username);
+        if (user == null) {
+            throw new UserNotFoundException(ApiUtil.formatError("User not found"));
+        }
 
         WhiteboardEdit whiteboardEdit = new WhiteboardEdit();
         whiteboardEdit.setRoomid(room.getId());
