@@ -5,6 +5,8 @@ import edu.boisestate.cloudcomputing.whiteboardapi.entity.User;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handles DB reads/writes for the User table.
@@ -90,6 +92,20 @@ public class UserDao {
                     .getSingleResult();
         } catch (NoResultException ex) {
             return null;
+        }
+    }
+
+    /**
+     * Returns a list of all users.
+     *
+     * @return The list of users.
+     */
+    public List<User> getUsers() {
+        try {
+            return em.createQuery("SELECT u FROM User u ORDER BY u.username", User.class)
+                    .getResultList();
+        } catch (NoResultException ex) {
+            return new ArrayList<>();
         }
     }
 }

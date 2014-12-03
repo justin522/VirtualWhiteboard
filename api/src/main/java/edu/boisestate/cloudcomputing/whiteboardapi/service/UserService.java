@@ -2,6 +2,7 @@ package edu.boisestate.cloudcomputing.whiteboardapi.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.boisestate.cloudcomputing.whiteboardapi.entity.UserList;
 import edu.boisestate.cloudcomputing.whiteboardapi.exception.FailedLoginException;
 import edu.boisestate.cloudcomputing.whiteboardapi.util.ApiUtil;
 import edu.boisestate.cloudcomputing.whiteboardapi.dao.UserDao;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * Handles API requests related to users.
@@ -65,6 +67,22 @@ public class UserService {
         }
 
         return om.writeValueAsString(user);
+    }
+
+    /**
+     * Gets a list of all users.
+     *
+     * @return The list of users.
+     * @throws JsonProcessingException
+     */
+    @GET
+    @Path("/getusers")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getUsers() throws JsonProcessingException {
+        List<User> users = userDao.getUsers();
+        UserList userList = new UserList(users);
+
+        return om.writeValueAsString(userList);
     }
 
     /**
