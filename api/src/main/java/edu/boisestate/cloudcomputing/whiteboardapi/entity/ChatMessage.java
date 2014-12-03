@@ -1,6 +1,8 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -12,23 +14,24 @@ public class ChatMessage {
     @GeneratedValue
     private Long id;
 
-    @Transient
-    private String action;
-
     @Column
     private Long userid;
 
     @Transient
     private String user;
 
-    @Column(name = "message")
-    private String msg;
-
     @Column
     private Long roomid;
 
     @Transient
     private String room;
+
+    @Column(name = "data")
+    @Type(type = "text")
+    private String dataString;
+
+    @Transient
+    private JsonNode data;
 
     @Column(name = "created", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -40,10 +43,6 @@ public class ChatMessage {
     @JsonIgnore
     public Long getId() {
         return id;
-    }
-
-    public String getAction() {
-        return "message";
     }
 
     @JsonIgnore
@@ -63,14 +62,6 @@ public class ChatMessage {
         this.user = user;
     }
 
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
     @JsonIgnore
     public Long getRoomid() {
         return roomid;
@@ -86,6 +77,23 @@ public class ChatMessage {
 
     public void setRoom(String room) {
         this.room = room;
+    }
+
+    @JsonIgnore
+    public String getDataString() {
+        return dataString;
+    }
+
+    public void setDataString(String dataString) {
+        this.dataString = dataString;
+    }
+
+    public JsonNode getData() {
+        return data;
+    }
+
+    public void setData(JsonNode data) {
+        this.data = data;
     }
 
     @JsonIgnore

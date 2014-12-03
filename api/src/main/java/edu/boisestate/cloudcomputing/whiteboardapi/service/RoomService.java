@@ -68,7 +68,7 @@ public class RoomService {
 	@Path("/{roomname}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getRoomDetailByName(@PathParam("roomname") String roomname)
-			throws JsonProcessingException, RoomNotFoundException {
+			throws IOException, RoomNotFoundException {
 		Room room = roomDao.getRoomByName(roomname);
 		if (room == null) {
 			throw new RoomNotFoundException(
@@ -80,6 +80,7 @@ public class RoomService {
             User user = userService.getUserById(message.getUserid());
             message.setUser(user.getUsername());
             message.setRoom(roomname);
+            message.setData(om.readTree(message.getDataString()));
         }
         room.setChat(chat);
 
@@ -88,6 +89,7 @@ public class RoomService {
             User user = userService.getUserById(edit.getUserid());
             edit.setUser(user.getUsername());
             edit.setRoom(roomname);
+            edit.setData(om.readTree(edit.getDataString()));
         }
         room.setWhiteboard(whiteboard);
 
@@ -123,10 +125,11 @@ public class RoomService {
     @Produces(MediaType.APPLICATION_JSON)
     public String updateChat(ChatMessage chatMessage) throws IOException {
         User user = userService.getUserByName(chatMessage.getUser());
-        chatMessage.setUserid(user.getId());
-
         Room room = roomDao.getRoomByName(chatMessage.getRoom());
+
+        chatMessage.setUserid(user.getId());
         chatMessage.setRoomid(room.getId());
+        chatMessage.setDataString(chatMessage.getData().toString());
 
         chatDao.saveChatMessage(chatMessage);
 
@@ -146,10 +149,11 @@ public class RoomService {
     @Produces(MediaType.APPLICATION_JSON)
     public String updateBoard(WhiteboardEdit whiteboardEdit) throws IOException {
         User user = userService.getUserByName(whiteboardEdit.getUser());
-        whiteboardEdit.setUserid(user.getId());
-
         Room room = roomDao.getRoomByName(whiteboardEdit.getRoom());
+
+        whiteboardEdit.setUserid(user.getId());
         whiteboardEdit.setRoomid(room.getId());
+        whiteboardEdit.setDataString(whiteboardEdit.getData().toString());
 
         whiteboardDao.saveWhiteboardEdit(whiteboardEdit);
 
