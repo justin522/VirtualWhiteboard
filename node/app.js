@@ -24,8 +24,8 @@ app.use(express.static(__dirname + '/www'));
 
 
 /*SOCKET DATA*/
-//io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
-io.adapter(redis({host:'localhost',port:6379}));
+io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
+//io.adapter(redis({host:'localhost',port:6379}));
 io.sockets.on('connection',function(socket){
 	clients[socket.id]=socket;	
 	console.log("log in");
