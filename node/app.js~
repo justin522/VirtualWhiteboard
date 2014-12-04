@@ -5,8 +5,10 @@ var express = require('express')
     , path = require('path')
     , redis = require('socket.io-redis')	
     , session = require('express-session')
-    , cookieParser = require('cookie-parser');
+    , cookieParser = require('cookie-parser')
+    , Client = require('node-rest-client').Client;
 
+client = new Client();
 var drawinginstructions = {};
 var clients = {};
 var messages = {};
@@ -14,6 +16,9 @@ var messages = {};
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
+var args = {
+headers:{"Content-Type":"application/json"}
+};
 var log = {};
 log.users = [];
 log.messages = [];
@@ -25,6 +30,7 @@ app.use(express.static(__dirname + '/www'));
 
 /*SOCKET DATA*/
 io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
+//io.adapter(redis({host:'localhost',port:6379}));
 io.sockets.on('connection',function(socket){
 	clients[socket.id]=socket;	
 	console.log("log in");
@@ -33,22 +39,37 @@ io.sockets.on('connection',function(socket){
 	socket.join(room);
 	console.log('socektid ' +socket.id);
 
-	console.log(userName + " has joined this " + room); 
-	
-	if(typeof drawinginstructions[room] !== 'undefined'){
-			drawinginstructions[room].foreach(function(intruction){
-				socket.emit('draw',instruction);			
-			}); 
+	console.log(userName + " has joined " + room); 
+	client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms",function(data,response)
+		{
+			console.log(data);
+			for (var key in data)
+			{
+console.log(data[key].roomName);
+				if(data[key].roomName == room)
+				{
+					console.log('true');				
+				}
+				
+			}
+		});
+	client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/"+room,function(data,response)
+		{
+			console.log(data);
+		});
+		/*if(typeof drawinginstructions[room] !== 'undefined'){
+			for (var key in drawinginstructions[room])
+			{
+				socket.emit('draw',drawinginstructions[room][key]);
+			}
+				 
 		}
-	if(typeof messages[room] !== 'undefined'){
+		if(typeof messages[room] !== 'undefined'){
 			for (var key in messages[room])
 			{
 				socket.emit('message',messages[room][key]);
 			}	
-			//messages[room].foreach(function(intruction){
-				//socket.emit('message',instruction);			
-			//}); 
-		}
+		}*/
 	});
 	socket.on("msg",function(usr,m){
 		var room = socket.rooms[1];
@@ -61,27 +82,19 @@ io.sockets.on('connection',function(socket){
 		if(typeof messages[room] == 'undefined'){
 			messages[room] = [];
 		}
-		messages[room].push(reply);
+		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updateboard/"+room+"/user/"+usr,args,function(data,response){
+			console.log(data);
+		});
+		//messages[room].push(reply);
 			//console.log('room: ' + room + ' instruct ' + reply);
 		io.to(room).emit('message',reply);
-		console.log('room '+ room + ' reply ', reply);
-	});
-	socket.on("link",function(usr,type,linkname,url){
-		var room = socket.rooms[1];
-		var link={};
-		link.usr=usr;
-		link.type=type;
-		link.name=linkname;
-		link.url=url;
-		log.links.push(link);
-		var reply = JSON.stringify({action:'link',user:usr,link:type+": <a href='"+url+"'>"+linkname+"</a>."})
-		io.to(room).emit('link',reply);
+		//console.log('room '+ room + ' reply ', reply);
 	});
 	socket.on('drawing',function(data){
 		var drawing = JSON.parse(data);
 		var room = socket.rooms[1];
-		var reply = JSON.stringify({action:'draw',user:drawing.user,type:drawing.type,layer:drawing.layer,prevX:drawing.prevX,prevY:drawing.prevY,currX:drawing.currX,
-			currY:drawing.currY,strokeColor:drawing.strokeColor,strokeWidth:drawing.strokeWidth})
+		//var reply = JSON.stringify({action:'draw',user:drawing.user,type:drawing.type,layer:drawing.layer,prevX:drawing.prevX,prevY:drawing.prevY,currX:drawing.currX,currY:drawing.currY,strokeColor:drawing.strokeColor,strokeWidth:drawing.strokeWidth});
+		var reply = JSON.stringify({action:'draw',user:drawing.user,data:drawing.data});
 		if(typeof drawinginstructions[room] == 'undefined'){
 			drawinginstructions[room] = [];
 		}

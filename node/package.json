@@ -8,6 +8,7 @@
     "express": "^4.10.1",
     "express-session": "^1.9.1",
     "http-proxy": "^1.6.2",
+    "node-rest-client": "^1.4.1",
     "redis": "^0.12.1",
     "session.socket.io": "^0.1.6",
     "socket.io": "^1.2.0",

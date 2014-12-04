@@ -5,8 +5,10 @@ var express = require('express')
     , path = require('path')
     , redis = require('socket.io-redis')	
     , session = require('express-session')
-    , cookieParser = require('cookie-parser');
+    , cookieParser = require('cookie-parser')
+    , Client = require('node-rest-client').Client;
 
+client = new Client();
 var drawinginstructions = {};
 var clients = {};
 var messages = {};
@@ -14,6 +16,9 @@ var messages = {};
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
+var args = {
+headers:{"Content-Type":"application/json"}
+};
 var log = {};
 log.users = [];
 log.messages = [];
@@ -35,8 +40,15 @@ io.sockets.on('connection',function(socket){
 	console.log('socektid ' +socket.id);
 
 	console.log(userName + " has joined " + room); 
-	
-		if(typeof drawinginstructions[room] !== 'undefined'){
+	client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms",function(data,response)
+		{
+			console.log(data);
+		});
+	client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/"+room,function(data,response)
+		{
+			console.log(data);
+		});
+		/*if(typeof drawinginstructions[room] !== 'undefined'){
 			for (var key in drawinginstructions[room])
 			{
 				socket.emit('draw',drawinginstructions[room][key]);
@@ -48,7 +60,7 @@ io.sockets.on('connection',function(socket){
 			{
 				socket.emit('message',messages[room][key]);
 			}	
-		}
+		}*/
 	});
 	socket.on("msg",function(usr,m){
 		var room = socket.rooms[1];
@@ -61,10 +73,13 @@ io.sockets.on('connection',function(socket){
 		if(typeof messages[room] == 'undefined'){
 			messages[room] = [];
 		}
-		messages[room].push(reply);
+		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updateboard/"+room+"/user/"+usr,args,function(data,response){
+			console.log(data);
+		});
+		//messages[room].push(reply);
 			//console.log('room: ' + room + ' instruct ' + reply);
 		io.to(room).emit('message',reply);
-		console.log('room '+ room + ' reply ', reply);
+		//console.log('room '+ room + ' reply ', reply);
 	});
 	socket.on('drawing',function(data){
 		var drawing = JSON.parse(data);
