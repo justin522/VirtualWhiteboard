@@ -128,6 +128,9 @@
 	    ctx.globalCompositeOperation = "source-over";
 		ctx.closePath();
 	},
+	$.whiteboard.addStyle=function(rules){
+		$("head").append("<style>"+rules+"</style>");
+	},
 	$.widget( "whiteboard.workspace", {
 		options: {
 			width: "700px",
@@ -205,6 +208,11 @@ $(document).ready(function(){
 		$('#chat-input').val('');
 	});
 	$('#chat-input').keypress(function(e) {
+		if ( e.which == 13 ) {
+			$("#post-chat").click();
+		}
+	});
+	$('#signin').keypress(function(e) {
 		if ( e.which == 13 ) {
 			$("#post-chat").click();
 		}

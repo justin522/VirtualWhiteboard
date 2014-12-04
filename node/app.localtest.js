@@ -30,8 +30,8 @@ app.use(express.static(__dirname + '/www'));
 
 
 /*SOCKET DATA*/
-io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
-//io.adapter(redis({host:'localhost',port:6379}));
+//io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
+io.adapter(redis({host:'localhost',port:6379}));
 io.sockets.on('connection',function(socket){
 	clients[socket.id]=socket;	
 	console.log("log in");
@@ -40,32 +40,33 @@ io.sockets.on('connection',function(socket){
 		socket.join(room);
 		console.log('socektid ' +socket.id);
 	
-		console.log(userName + " has joined " + room);
-		client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms",function(data,response){
-			console.log(data);
-		});
-		client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/"+room,function(data,response){
-			console.log(data);
-		});
-		// if(typeof drawinginstructions[room] !== 'undefined'){
-			// for (var key in drawinginstructions[room])
-			// {
-				// socket.emit('draw',drawinginstructions[room][key]);
-			// }
-		// }
-		// if(typeof messages[room] !== 'undefined'){
-			// for (var key in messages[room])
-			// {
-				// socket.emit('message',messages[room][key]);
-			// }
-		// }else if(room)messages[room] = [];
+		console.log(userName + " has joined " + room); 
+		// client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms",function(data,response){
+			// console.log(data);
+		// });
+		// client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/"+room,function(data,response){
+			// console.log(data);
+		// });
+		if(typeof drawinginstructions[room] !== 'undefined'){
+			for (var key in drawinginstructions[room])
+			{
+				socket.emit('draw',drawinginstructions[room][key]);
+			}
+				 
+		}
+		if(typeof messages[room] !== 'undefined'){
+			for (var key in messages[room])
+			{
+				socket.emit('message',messages[room][key]);
+			}
+		}else if(room)messages[room] = [];
 		if(userName){
 			var loginMessage = JSON.stringify({action:'join',user:userName,msg:userName+" has joined the room."});	
-			args.data=loginMessage;
-			client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+room+"/user/"+usr,args,function(data,response){
-				console.log(data);
-			});
-			// messages[room].push(loginMessage);
+			// args.data=loginMessage;
+			// client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+room+"/user/"+usr,args,function(data,response){
+				// console.log(data);
+			// });
+			messages[room].push(loginMessage);
 			io.to(room).emit('join',loginMessage);
 			socket.username=userName;
 			socket.room=room;
@@ -75,11 +76,11 @@ io.sockets.on('connection',function(socket){
 		if(socket.username){
 			console.log(socket.username+' has disconnected');
 			var logoutMessage = JSON.stringify({action:'leave',user:socket.username,msg:socket.username+" has left the room."});
-			args.data=logoutMessage;
-			client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+socket.room+"/user/"+usr,args,function(data,response){
-				console.log(data);
-			});
-			// messages[socket.room].push(logoutMessage);
+			// args.data=logoutMessage;
+			// client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+socket.room+"/user/"+usr,args,function(data,response){
+				// console.log(data);
+			// });
+			messages[socket.room].push(logoutMessage);
 			io.to(socket.room).emit('join',logoutMessage);
 		}
 	});
@@ -92,11 +93,11 @@ io.sockets.on('connection',function(socket){
 		if(typeof messages[socket.room] == 'undefined'){
 			messages[socket.room] = [];
 		}
-		args.data=reply;
-		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+socket.room+"/user/"+usr,args,function(data,response){
-			console.log(data);
-		});
-		// messages[socket.room].push(reply);
+		// args.data=reply;
+		// client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+socket.room+"/user/"+usr,args,function(data,response){
+			// console.log(data);
+		// });
+		messages[socket.room].push(reply);
 		io.to(socket.room).emit('message',reply);
 	});
 	socket.on('drawing',function(data){
@@ -105,11 +106,11 @@ io.sockets.on('connection',function(socket){
 		if(typeof drawinginstructions[socket.room] == 'undefined'){
 			drawinginstructions[socket.room] = [];
 		}
-		args.data=reply;
-		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updateboard/"+socket.room+"/user/"+usr,args,function(data,response){
-			console.log(data);
-		});
-		// drawinginstructions[socket.room].push(reply);
+		// args.data=reply;
+		// client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updateboard/"+socket.room+"/user/"+usr,args,function(data,response){
+			// console.log(data);
+		// });
+		drawinginstructions[socket.room].push(reply);
 		io.to(socket.room).emit('draw',reply);
 	});
 });
