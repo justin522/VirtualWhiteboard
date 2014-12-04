@@ -33,9 +33,7 @@ app.use(express.static(__dirname + '/www'));
 //io.adapter(redis({host:'cs597-VirtualWhiteboardDB',port:6379}));
 io.adapter(redis({host:'localhost',port:6379}));
 io.sockets.on('connection',function(socket){
-	clients[socket.id]=socket;	
-	console.log("log in");
-
+	clients[socket.id]=socket;
 	socket.on('room',function(userName,room){
 		socket.join(room);
 		console.log('socektid ' +socket.id);

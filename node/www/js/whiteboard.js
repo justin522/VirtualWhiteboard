@@ -8,7 +8,7 @@
 		host:function(){return window.location.host.split(':')[0];},
 		socket:function(){return io.connect('http://'+this.host());},
 		userName:"",
-		fillColor:null,
+		fillColor: null,
 		strokeColor:"black",
 		strokeWidth: 1,
 		layercount: 0
@@ -35,7 +35,7 @@
 		al.off();
 		switch(tool){
 			case "realtime":
-				$($.whiteboard.workspace).css('cursor','url(img/freehand-marker.png), auto');
+				$($.whiteboard.workspace).css('cursor','url(img/marker.png), auto');
 				al.click(function(e){
 					var point=wb.getMousePosition(e);
 					wb.emitPoint(point.x,point.y);
@@ -79,6 +79,81 @@
 				});
 				
 				break;
+			case "line":
+				$($.whiteboard.workspace).css('cursor','url(img/line-marker.png), auto');
+				var x=null;
+				var y=null;
+				al.mousedown(function(e){
+					var point=wb.getMousePosition(e);
+					x=point.x;
+					y=point.y;
+				});
+				al.mouseup(function(e){
+					if(null!==x){
+						var point=wb.getMousePosition(e);
+						$.whiteboard.emitLine(x,y,point.x,point.y);
+						x=null;
+						y=null;
+					}
+				}).mousemove(function(e){
+				});
+				break;
+			case "polyline":
+				$($.whiteboard.workspace).css('cursor','url(img/polyline-marker.png), auto');
+				var x=null;
+				var y=null;
+				al.click(function(e){
+					var point=wb.getMousePosition(e);
+					if(null!==x){
+						$.whiteboard.emitLine(x,y,point.x,point.y);
+					}
+					x=point.x;
+					y=point.y;
+				}).dblclick(function(e){
+					x=null;
+					y=null;
+				}).mousemove(function(e){
+				});
+				break;
+			case "rect":
+				$($.whiteboard.workspace).css('cursor','url(img/rectangle-marker.png), auto');
+				var x=null;
+				var y=null;
+				al.mousedown(function(e){
+					var point=wb.getMousePosition(e);
+					x=point.x;
+					y=point.y;
+				});
+				al.mouseup(function(e){
+					if(null!==x){
+						var point=wb.getMousePosition(e);
+						$.whiteboard.emitRect(x,y,point.x,point.y);
+						x=null;
+						y=null;
+					}
+				}).mousemove(function(e){
+				});
+				break;
+			case "circle":
+				$($.whiteboard.workspace).css('cursor','url(img/circle-marker.png), auto');
+				var cx=null;
+				var cy=null;
+				al.mousedown(function(e){
+					var point=wb.getMousePosition(e);
+					cx=point.x;
+					cy=point.y;
+				});
+				al.mouseup(function(e){
+					if(null!==x){
+						var point=wb.getMousePosition(e);
+						r=Math.sqrt(Math.pow(point.x-cx,2)+Math.pow(point.y-cy,2));
+						$.whiteboard.emitCircle(cx,cy,r);
+						cx=null;
+						cy=null;
+					}
+				}).mousemove(function(e){
+				});
+				break;
 		}
 	},
 	$.whiteboard.emitPoint=function(x,y) {
@@ -91,7 +166,9 @@
 		ctx.beginPath();
 		ctx.arc(x, y, strokeWidth/2, 0, 2 * Math.PI, false);
 	    ctx.fillStyle = strokeColor;
-	    ctx.fill();
+		if("null"!==strokeColor){
+	    	ctx.fill();
+	    }
 		ctx.closePath();
 	},
 	$.whiteboard.emitLine=function(x,y,x1,y1) {
@@ -110,7 +187,49 @@
 		ctx.strokeStyle = strokeColor;
 		ctx.lineWidth = strokeWidth;
 		ctx.lineCap = 'round';
-		ctx.stroke();
+		if("null"!==strokeColor){
+			ctx.stroke();
+		}
+		ctx.closePath();
+	},
+	$.whiteboard.emitRect=function(x,y,x1,y1) {
+		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|rect|'+x+'|'+y+'|'+x1+'|'+y1+'|'+$.whiteboard.fillColor+'|'+$.whiteboard.strokeColor+'|'+$.whiteboard.strokeWidth});
+		$.whiteboard.socket().emit('drawing',data);
+	},
+	$.whiteboard.drawRect=function(layer,x,y,x1,y1,fillColor,strokeColor,strokeWidth){
+		canvas=$('#'+layer)[0];
+		ctx=canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.lineWidth = strokeWidth;
+		if("null"!==fillColor){
+	    	ctx.fillStyle = fillColor;
+			ctx.fillRect(x, y, x1, y1);
+		}
+		if("null"!==strokeColor){
+			ctx.strokeStyle = strokeColor;
+			ctx.rect(x, y, x1, y1);
+			ctx.stroke();
+		}
+		ctx.closePath();
+	},
+	$.whiteboard.emitCircle=function(x,y,r) {
+		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|circle|'+x+'|'+y+'|'+r+'|'+$.whiteboard.fillColor+'|'+$.whiteboard.strokeColor+'|'+$.whiteboard.strokeWidth});
+		$.whiteboard.socket().emit('drawing',data);
+	},
+	$.whiteboard.drawCircle=function(layer,x,y,r,fillColor,strokeColor,strokeWidth){
+		canvas=$('#'+layer)[0];
+		ctx=canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.lineWidth = strokeWidth;
+		ctx.arc(x, y, r, 0, 2 * Math.PI, false);
+		if("null"!==fillColor){
+	    	ctx.fillStyle = fillColor;
+			ctx.fill();
+		}
+		if("null"!==strokeColor){
+			ctx.strokeStyle = strokeColor;
+			ctx.stroke();
+		}
 		ctx.closePath();
 	},
 	$.whiteboard.emitEraseCanvas=function(x,y) {
@@ -170,6 +289,8 @@
 			newLayer.css("position","absolute").attr("id","l"+$.whiteboard.layercount);
 			$.whiteboard.layers[0].before(newLayer);
 			$.whiteboard.layercount++;
+			if($.whiteboard.layercount===2)$("#layers").append('<p><input checked="checked" type="radio" name="drawing-layers" /></p>');
+			else if($.whiteboard.layercount>2)$("#layers").append('<p><input type="radio" name="drawing-layers" /></p>');
 			return newLayer;
 		},
 		_addActionLayer: function(type) {
@@ -201,12 +322,24 @@
 $(document).ready(function(){
 	$("#whiteboard").workspace();
 	$("#post-chat").click(function(){
-		var msg = {type:'message',msg:$('#chat-input').val()};
-		//socket.json.send(msg);
-		$.whiteboard.socket().emit('msg',$('#input-usr').val(), $('#chat-input').val());
-		//alert("hey");
+		var m = {type:'message',data:$('#chat-input').val()};
+		$.whiteboard.socket().emit('msg',$('#input-usr').val(), m);
 		$('#chat-input').val('');
 	});
+	$('#link-dialog').dialog({
+		buttons: [
+			{
+				text: "OK",
+				click: function() {
+					var m = {type:'link',url:$('#link-url').val(),desc:$('#link-desc').val()};
+					$.whiteboard.socket().emit('msg',$('#input-usr').val(), m);
+					$('#link-url,#link-desct').val('');
+					$( this ).dialog( "close" );
+				}
+			}
+		]
+	}).dialog("close");
+	$('#link-button').click(function(){$('#link-dialog').dialog("open");});
 	$('#chat-input').keypress(function(e) {
 		if ( e.which == 13 ) {
 			$("#post-chat").click();
@@ -225,7 +358,7 @@ $(document).ready(function(){
 		clickoutFiresChange: true,
 		change: function(color) {
 			if(!color){
-				$.whiteboard.fillColor = "white";
+				$.whiteboard.fillColor = null;
 				$("#sample").attr("fill","none");
 			}
 			else{
@@ -243,7 +376,7 @@ $(document).ready(function(){
 		clickoutFiresChange: true,
 		change: function(color) {
 			if(!color){
-				$.whiteboard.strokeColor = "white";
+				$.whiteboard.strokeColor = null;
 				$("#sample").attr("stroke","none");
 			}
 			else{
@@ -296,30 +429,26 @@ $(document).ready(function(){
 		text: false,
 		icons: {
 			primary: "draw-icon-pline"
-		},
-		disabled: true
-	});
+		}
+	}).click(function(){$.whiteboard.setTool("polyline");});
 	$( "#line" ).button({
 		text: false,
 		icons: {
 			primary: "draw-icon-line"
-		},
-		disabled: true
-	});
+		}
+	}).click(function(){$.whiteboard.setTool("line");});
 	$( "#rectangle" ).button({
 		text: false,
 		icons: {
 			primary: "draw-icon-rect"
-		},
-		disabled: true
-	});
+		}
+	}).click(function(){$.whiteboard.setTool("rect");});
 	$( "#circle" ).button({
 		text: false,
 		icons: {
 			primary: "draw-icon-circle"
-		},
-		disabled: true
-	});
+		}
+	}).click(function(){$.whiteboard.setTool("circle");});
 	$( "#oval" ).button({
 		text: false,
 		icons: {
@@ -377,7 +506,8 @@ $(document).ready(function(){
 		},
 		disabled: true
 	});
-	
+	$( "#rl-button" ).button().click(function(){$.whiteboard.addCanvasLayer();});
+	$( "#vl-button" ).button().click(function(){$.whiteboard.addSVGLayer();});
 //replace "fakerooms.json" with rooms endpoint
 	//$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
 	$.getJSON( "fakerooms.json", function( data ) {
@@ -413,9 +543,6 @@ $(document).ready(function(){
 			$("#room-input").val(this.value).hide();
 		}
 	});
-	
-	//replace later
-	//initCanvas();
 });
 
 $.whiteboard.socket().on("draw",function(drawData){
@@ -425,6 +552,8 @@ $.whiteboard.socket().on("draw",function(drawData){
 		switch(data[2]){
 			case "point":$.whiteboard.drawCanvasPoint(data[1],data[3],data[4],data[5],data[6]); break;
 			case "line":$.whiteboard.drawCanvasLine(data[1],data[3],data[4],data[5],data[6],data[7],data[8]); break;
+			case "rect":$.whiteboard.drawRect(data[1],data[3],data[4],data[5],data[6],data[7],data[8],data[9]); break;
+			case "circle":$.whiteboard.drawCircle(data[1],data[3],data[4],data[5],data[6],data[7],data[8]); break;
 			case "erase":$.whiteboard.eraseCanvas(data[1],data[3],data[4],data[5]); break;
 		}
 	}
