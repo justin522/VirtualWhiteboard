@@ -1,28 +1,227 @@
-var roomName = "";
-var host = window.location.host.split(':')[0];
-var socket = io.connect('http://'+host);
-var userName;
+(function( $ ) {
+	$.whiteboard={
+		workspace:null,
+		mode:null,
+		roomName:"",
+		layers:[],
+		activeLayer:null,
+		host:function(){return window.location.host.split(':')[0];},
+		socket:function(){return io.connect('http://'+this.host());},
+		userName:"",
+		fillColor:null,
+		strokeColor:"black",
+		strokeWidth: 1,
+		layercount: 0
+	},
+	$.whiteboard.canvasMode=function(tool){
+		$.whiteboard.mode="canvas";
+	},
+
+	$.whiteboard.getMousePosition=function(e) {
+		var rect = $.whiteboard.layers[0][0].getBoundingClientRect();
+		return {
+			x: e.clientX - rect.left,
+			y: e.clientY - rect.top
+		};
+	},
+	$.whiteboard.setTool=function(tool){
+		var wb=$.whiteboard;
+		var al=$.whiteboard.layers[0];
+		var draw=false;
+		var prevX = null;
+		var prevY = null;
+		var currX = 0;
+		var currY = 0;
+		al.off();
+		switch(tool){
+			case "realtime":
+				$($.whiteboard.workspace).css('cursor','url(img/freehand-marker.png), auto');
+				al.click(function(e){
+					var point=wb.getMousePosition(e);
+					wb.emitPoint(point.x,point.y);
+				}).mousedown(function(e){
+					draw=true;
+				});
+				al.mouseup(function(e){
+					draw=false;
+				}).mousemove(function(e){
+					var point=wb.getMousePosition(e);
+					prevX = currX;
+					prevY = currY;
+					currX = point.x;
+					currY = point.y;
+					if(draw){
+						if(Math.sqrt(Math.pow((currX-prevX),2)+Math.pow((currY-prevY),2))>$.whiteboard.strokeWidth/2){
+							wb.emitLine(prevX,prevY,currX,currY);
+						}else wb.emitPoint(currX,currY);	
+					}
+				});
+				break;
+			case "erase_c":
+				$($.whiteboard.workspace).css('cursor','url(img/eraser.png), auto');
+				al.click(function(e){
+					var point=wb.getMousePosition(e);
+					wb.emitEraseCanvas(point.x,point.y);
+				}).mousedown(function(e){
+					draw=true;
+				});
+				al.mouseup(function(e){
+					draw=false;
+				}).mousemove(function(e){
+					var point=wb.getMousePosition(e);
+					prevX = currX;
+					prevY = currY;
+					currX = point.x;
+					currY = point.y;
+					if(draw){
+						wb.emitEraseCanvas(currX,currY);	
+					}
+				});
+				
+				break;
+		}
+	},
+	$.whiteboard.emitPoint=function(x,y) {
+		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|point|'+x+'|'+y+'|'+$.whiteboard.strokeColor+'|'+$.whiteboard.strokeWidth});
+		$.whiteboard.socket().emit('drawing',data);
+	},
+	$.whiteboard.drawCanvasPoint=function(layer,x,y,strokeColor,strokeWidth){
+		canvas=$('#'+layer)[0];
+		ctx=canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.arc(x, y, strokeWidth/2, 0, 2 * Math.PI, false);
+	    ctx.fillStyle = strokeColor;
+	    ctx.fill();
+		ctx.closePath();
+	},
+	$.whiteboard.emitLine=function(x,y,x1,y1) {
+		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|line|'+x+'|'+y+'|'+x1+'|'+y1+'|'+$.whiteboard.strokeColor+'|'+$.whiteboard.strokeWidth});
+		$.whiteboard.socket().emit('drawing',data);
+	},
+	$.whiteboard.drawCanvasLine=function(layer,x,y,x1,y1,strokeColor,strokeWidth){
+		canvas=$('#'+layer)[0];
+		ctx=canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.arc(x, y, strokeWidth/20, 0, 2 * Math.PI, false);
+	    ctx.fillStyle = strokeColor;
+	    ctx.fill();
+		ctx.moveTo(x, y);
+		ctx.lineTo(x1, y1);
+		ctx.strokeStyle = strokeColor;
+		ctx.lineWidth = strokeWidth;
+		ctx.lineCap = 'round';
+		ctx.stroke();
+		ctx.closePath();
+	},
+	$.whiteboard.emitEraseCanvas=function(x,y) {
+		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|erase|'+x+'|'+y+'|'+$.whiteboard.strokeWidth});
+		$.whiteboard.socket().emit('drawing',data);
+	},
+	$.whiteboard.eraseCanvas=function(layer,x,y,strokeWidth){
+		canvas=$('#'+layer)[0];
+		ctx=canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.arc(x, y, strokeWidth/2, 0, 2 * Math.PI, false);
+	    ctx.fillStyle = "black";
+	    ctx.globalCompositeOperation = "destination-out";
+	    ctx.fill();
+	    ctx.globalCompositeOperation = "source-over";
+		ctx.closePath();
+	},
+	$.widget( "whiteboard.workspace", {
+		options: {
+			width: "700px",
+			height: "500px",
+			background: "white",
+			initMode: "canvas"
+		},
+		_create: function() {
+			$.whiteboard.workspace=this.element;
+			$.whiteboard.mode=this.options.initMode;
+			this.element.addClass( "whiteboard" );
+			this.element.append('<div id="whiteboard-background" />').css({width:this.options.width,height:this.options.height,background:this.options.background});
+			this._addActionLayer();
+			$.whiteboard.layers[0].appendTo(this.element).css({width:this.options.width,height:this.options.height});
+			switch(this.options.initMode){
+				case "canvas": this.addCanvasLayer(); break;
+				case "svg": this.addSVGLayer(); break;
+	 		}
+	 		$.whiteboard.activeLayer=$.whiteboard.layers[1];
+		},
+		_setOption: function( key, value ) {
+			if ( key === "value" ) {
+				value = this._constrain( value );
+			}
+			this._super( key, value );
+		},
+		_setOptions: function( options ) {
+			this._super( options );
+			this.refresh();
+		},
+		_addLayer: function(type) {
+			var newLayer;
+			switch(type){
+				default: newLayer=$('<'+type+' class="layer" width="'+this.options.width+'" height="'+this.options.height+'"></canvas>');
+			}
+			$.whiteboard.layers.push(newLayer);
+			newLayer.css("position","absolute").attr("id","l"+$.whiteboard.layercount);
+			$.whiteboard.layers[0].before(newLayer);
+			$.whiteboard.layercount++;
+			return newLayer;
+		},
+		_addActionLayer: function(type) {
+			var actionlayer=this.addSVGLayer();
+			$.whiteboard.setTool("realtime");
+			return actionlayer;
+		},
+	 
+		addSVGLayer: function() {
+			return this._addLayer("svg");
+		},
+	 
+		addCanvasLayer: function(type) {
+			this._addLayer("canvas");
+		},
+	 
+		setTool: function(toolMode) {
+			switch(toolMode){
+				case "realtime":
+			}
+		}
+	});
+})( jQuery );
+
+
+
+
+
 $(document).ready(function(){
-//alert(socket);
+	$("#whiteboard").workspace();
 	$("#post-chat").click(function(){
 		var msg = {type:'message',msg:$('#chat-input').val()};
 		//socket.json.send(msg);
-		socket.emit('msg',$('#input-usr').val(), $('#chat-input').val());
+		$.whiteboard.socket().emit('msg',$('#input-usr').val(), $('#chat-input').val());
 		//alert("hey");
 		$('#chat-input').val('');
+	});
+	$('#chat-input').keypress(function(e) {
+		if ( e.which == 13 ) {
+			$("#post-chat").click();
+		}
 	});
 	$("#fillcolor").spectrum({
 		showAlpha: true,
 		allowEmpty:true,
 		showInitial: true,
 		appendTo:"#color-tools",
+		clickoutFiresChange: true,
 		change: function(color) {
 			if(!color){
-				fillColor = "white";
+				$.whiteboard.fillColor = "white";
 				$("#sample").attr("fill","none");
 			}
 			else{
-				fillColor = color.toRgbString();
+				$.whiteboard.fillColor = color.toRgbString();
 				$("#sample").attr("fill",color.toRgbString());
 			}
 		}
@@ -33,13 +232,14 @@ $(document).ready(function(){
 		allowEmpty:true,
 		showInitial: true,
 		appendTo:"#color-tools",
+		clickoutFiresChange: true,
 		change: function(color) {
 			if(!color){
-				strokeColor = "white";
+				$.whiteboard.strokeColor = "white";
 				$("#sample").attr("stroke","none");
 			}
 			else{
-				strokeColor = color.toRgbString();
+				$.whiteboard.strokeColor = color.toRgbString();
 				$("#sample").attr("stroke",color.toRgbString());
 			}
 		}
@@ -55,21 +255,27 @@ $(document).ready(function(){
 		}
 	});
 	$("#linesize").change(function(){
-		strokeWidth = $(this).val();
+		$.whiteboard.strokeWidth = $(this).val();
 		$("#sample").attr("stroke-width",$(this).val());
 	});
 	$("#tabs").tabs();
-	$("#whiteboard").tabs();
 	$("#drawing-tools>input").click(function(){
 		if(!$(this).is(":checked")){
 			$(this).prop('checked',true).button( "refresh" );
 		}else $(this).siblings(":checked").removeAttr('checked').button( "refresh" );
 	});
+	$( "#realtime" ).button({
+		text: false,
+		icons: {
+			primary: "draw-icon-realtime"
+		}
+	}).click(function(){$.whiteboard.setTool("realtime");});
 	$( "#freehand" ).button({
 		text: false,
 		icons: {
 			primary: "draw-icon-free"
-		}
+		},
+		disabled: true
 	});
 	$( "#path" ).button({
 		text: false,
@@ -117,8 +323,9 @@ $(document).ready(function(){
 		text: false,
 		icons: {
 			primary: "draw-icon-erase"
-		},
-		disabled: true
+		}
+	}).click(function(){
+		$.whiteboard.setTool("erase_c");
 	});
 	$( "#select" ).button({
 		text: false,
@@ -164,6 +371,7 @@ $(document).ready(function(){
 	});
 	
 //replace "fakerooms.json" with rooms endpoint
+	//$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
 	$.getJSON( "fakerooms.json", function( data ) {
 		//var rooms=data.split(",");
 		//for(var room in rooms)$("<option>"+rooms[room]+"</option>").appendTo("#room-select");
@@ -180,7 +388,7 @@ $(document).ready(function(){
 				var room=$('#room-input').val();
 				if(room!==""&&user!==""){
 					userName=$('#input-usr').val();
-					socket.emit('room', user, room);
+					$.whiteboard.socket().emit('room', user, room);
 //replace "fakesignin.txt" with signin endpoint
 					$.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
 					$( this ).dialog( "close" );
@@ -199,20 +407,17 @@ $(document).ready(function(){
 	});
 	
 	//replace later
-	initCanvas();
+	//initCanvas();
 });
 
-socket.on("draw",function(drawData){
+$.whiteboard.socket().on("draw",function(drawData){
 	var draw = JSON.parse(drawData);
 	var data = draw.data.split("|");
-	console.log(data);
-	if(data[0]==="canvas")canvasDraw(data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+	if(data[0]==="canvas"){
+		switch(data[2]){
+			case "point":$.whiteboard.drawCanvasPoint(data[1],data[3],data[4],data[5],data[6]); break;
+			case "line":$.whiteboard.drawCanvasLine(data[1],data[3],data[4],data[5],data[6],data[7],data[8]); break;
+			case "erase":$.whiteboard.eraseCanvas(data[1],data[3],data[4],data[5]); break;
+		}
+	}
 });
-
-function getMousePosition(object, e) {
-	var rect = canvas.getBoundingClientRect();
-	return {
-		x: e.clientX - rect.left,
-		y: e.clientY - rect.top
-	};
-}

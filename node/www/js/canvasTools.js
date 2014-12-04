@@ -10,58 +10,70 @@ var strokeColor = "black",fillColor="black",strokeWidth = 1;
 function initCanvas() {
 	canvas = document.getElementById('canvas0');
 	ctx = canvas.getContext("2d");
-	ctx.scale(.425,.3);
+	//ctx.scale(.425,.3);
 	w = canvas.width;
 	h = canvas.height;
 
 	canvas.addEventListener("mousemove", function (e) {
-		findxy('move', e);
+		canvasDraw('move', e);
 	}, false);
 	canvas.addEventListener("mousedown", function (e) {
-		findxy('down', e);
+		canvasDraw('down', e);
 	}, false);
 	canvas.addEventListener("mouseup", function (e) {
-		findxy('up', e);
+		canvasDraw('up', e);
 	}, false);
 	canvas.addEventListener("mouseout", function (e) {
-		findxy('out', e);
+		canvasDraw('out', e);
 	}, false);
 }
 
-function emitCanvasDraw() {
-	//alert('draw');
-	//var data = JSON.stringify({user:'user',type:'type',layer:'layer',prevX:prevX,prevY:prevY,currX:currX,currY:currY,strokeColor:strokeColor,strokeWidth:strokeWidth});
+function emitCanvasPoint(x,y) {
 	var layer=$(canvas).attr("id");
-	var data = JSON.stringify({user:userName,data:'canvas|'+layer+'|'+prevX+'|'+prevY+'|'+currX+'|'+currY+'|'+strokeColor+'|'+strokeWidth});
+	var data = JSON.stringify({user:userName,data:'canvas|'+layer+'|point|'+x+'|'+y+'|'+strokeColor+'|'+strokeWidth});
 	socket.emit('drawing',data);
-	/*ctx.beginPath();
-	ctx.moveTo(prevX, prevY);
-	ctx.lineTo(currX, currY);
+}
+function canvasDrawPoint(layer,x,y,strokeColor,strokeWidth){
+	canvas=$('#'+layer)[0];
+	ctx=canvas.getContext("2d");
+	ctx.beginPath();
+	ctx.arc(x, y, strokeWidth/2, 0, 2 * Math.PI, false);
+    ctx.fillStyle = strokeColor;
+    ctx.fill();
+	ctx.closePath();
+
+}
+function emitCanvasLine(x,y,x1,y1) {
+	var layer=$(canvas).attr("id");
+	var data = JSON.stringify({user:userName,data:'canvas|'+layer+'|line|'+x+'|'+y+'|'+x1+'|'+y1+'|'+strokeColor+'|'+strokeWidth});
+	socket.emit('drawing',data);
+}
+function canvasDrawLine(layer,x,y,x1,y1,strokeColor,strokeWidth){
+	canvas=$('#'+layer)[0];
+	ctx=canvas.getContext("2d");
+	ctx.beginPath();
+	ctx.arc(x, y, strokeWidth/20, 0, 2 * Math.PI, false);
+    ctx.fillStyle = strokeColor;
+    ctx.fill();
+	ctx.moveTo(x, y);
+	ctx.lineTo(x1, y1);
 	ctx.strokeStyle = strokeColor;
 	ctx.lineWidth = strokeWidth;
+	ctx.lineCap = 'round';
 	ctx.stroke();
-	ctx.closePath();*/
+	ctx.closePath();
 }
-
-function erase() {
+function canvasErase(x,y) {
+	var layer=$(canvas).attr("id");
+	var data = JSON.stringify({user:userName,data:'canvas|'+layer+'|point|'+x+'|'+y+'|white|'+strokeWidth});
+	socket.emit('drawing',data);
+}
+function canvasClear() {
 	var m = confirm("Want to clear");
 	if (m) {
 		ctx.clearRect(0, 0, w, h);
 		document.getElementById("canvasimg").style.display = "none";
 	}
-}
-function canvasDraw(layer,prevX,prevY,currX,currY,strokeColor,strokeWidth){
-	console.log(strokeColor);
-	canvas=$('#'+layer)[0];
-	ctx=canvas.getContext("2d");
-	ctx.beginPath();
-	ctx.moveTo(prevX, prevY);
-	ctx.lineTo(currX, currY);
-	ctx.strokeStyle = strokeColor;
-	ctx.lineWidth = strokeWidth;
-	ctx.stroke();
-	ctx.closePath();
-
 }
 function save() {
 	document.getElementById("canvasimg").style.border = "2px solid";
@@ -70,25 +82,17 @@ function save() {
 	document.getElementById("canvasimg").style.display = "inline";
 }
 
-
-
-
-function findxy(object, e) {
+function canvasDraw(res, e) {
 	var mousePos = getMousePosition(canvas, e);
 	if (res == 'down') {
-		console.log(mousePos.x);
-		prevX = currX;
-		prevY = currY;
-		currX = mousePos.x;
-		currY = mousePos.y;
-
 		flag = true;
 		dot_flag = true;
 		if (dot_flag) {
-			ctx.beginPath();
-			ctx.fillStyle = fillColor;
-			ctx.fillRect(currX, currY, 2, 2);
-			ctx.closePath();
+			prevX = currX;
+			prevY = currY;
+			currX = mousePos.x;
+			currY = mousePos.y;
+			emitCanvasPoint(currX,currY);
 			dot_flag = false;
 		}
 	}
@@ -101,7 +105,9 @@ function findxy(object, e) {
 			prevY = currY;
 			currX = mousePos.x;
 			currY = mousePos.y;
-			emitCanvasDraw();
+			if(Math.sqrt(Math.pow((currX-prevX),2)+Math.pow((currY-prevY),2))>strokeWidth/2){
+				emitCanvasLine(prevX,prevY,currX,currY);
+			}else emitCanvasPoint(currX,currY);
 		}
 	}
 }

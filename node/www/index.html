@@ -26,7 +26,7 @@
 ----------------------------------*/
 
 /* states and images */
-#drawing-tools .ui-icon{
+#raster-tools .ui-icon,#vector-tools .ui-icon{
 	width: 32px;
 	height: 32px;
 	background-image: url("img/draw-icons.png");
@@ -50,6 +50,7 @@
 .draw-icon-text {background-position: -128px -32px;}
 .draw-icon-img {background-position: -160px -32px;}
 .draw-icon-undo {background-position: -192px -32px;}
+.draw-icon-realtime {background-position: -224px -32px;}
 		</style>
 		<style>
 			body{
@@ -63,20 +64,11 @@
 				margin-left:auto;
 				margin-right:auto;
 			}
-			#whiteboard{
-				cursor:url(img/freehand-marker.png), auto;
-			}
 			svg{
 				fill:white;
 			}
 			#svg0{
 				display: none;
-			}
-			.layer{
-				width:700px;
-				height: 500px;
-				border: solid;
-				background-color: white;
 			}
 			#tab-container{
 				position: absolute;
@@ -112,10 +104,12 @@
 				height: 320px;
 				background-color: slategray;
 				margin: 1em;
+				overflow: auto;
 			}
 			#chat-input{
-				width:600px;
+				width:492px;
 				margin-left: 1em;
+				float: left;
 			}
 			
 			#sample-container{
@@ -139,14 +133,13 @@
 		<script src='lib/spectrum.js'></script>
 		<script src='js/whiteboard.js'></script>
 		<script src='js/chat.js'></script>
-		<script src='js/canvasTools.js'></script>
+		<!--<script src='js/canvasTools.js'></script>-->
 	</head>
 
 	<body>
 		<div>
 			<div id="whiteboard">
-				<canvas class="layer" id="svg0"></canvas>
-				<canvas class="layer" id="canvas0"></canvas>
+				<!--<canvas width="700px" height="500px" class="layer" id="canvas0"></canvas>-->
 			</div>
 			<div id="tabs">
 				<ul>
@@ -156,8 +149,9 @@
 					<li><a href="#users">Users</a></li>
 				</ul>
 				<div id="tools">
-					<div id="drawing-tools">
-						<input type="checkbox" checked="checked" id="freehand" /><label for="freehand">Freehand</label></input>
+					<div id="raster-tools">
+						<input type="checkbox" checked="checked" id="realtime" /><label for="realtime">Real Time</label></input><br/><br/>
+						<input type="checkbox" id="freehand" /><label for="freehand">Freehand</label></input>
 						<input type="checkbox" id="path"><label for="path">Path</label></input>
 						<input type="checkbox" id="polyline"><label for="polyline">Polyline</label></input>
 						<input type="checkbox" id="line"><label for="line">Line</label></input>
@@ -171,6 +165,23 @@
 						<input type="checkbox" id="text"><label for="text">Text</label></input>
 						<input type="checkbox" id="image"><label for="image">Image</label></input>
 						<input type="checkbox" id="undo"><label for="undo">Undo</label></input>
+					</div>
+					<div id="vector-tools">
+						<input type="checkbox" checked="checked" id="v-realtime" /><label for="v-realtime">Real Time</label></input>
+						<input type="checkbox" id="v-freehand" /><label for="v-freehand">Freehand</label></input>
+						<input type="checkbox" id="v-path"><label for="v-path">Path</label></input>
+						<input type="checkbox" id="v-polyline"><label for="v-polyline">Polyline</label></input>
+						<input type="checkbox" id="v-line"><label for="v-line">Line</label></input>
+						<input type="checkbox" id="v-circle"><label for="v-circle">Circle</label></input>
+						<input type="checkbox" id="v-oval"><label for="v-oval">Oval</label></input>
+						<input type="checkbox" id="v-rectangle"><label for="v-rectangle">Rectangle</input></label><br/><br/>
+						<input type="checkbox" id="v-erase"><label for="v-erase">Erase</label></input>
+						<input type="checkbox" id="v-select"><label for="v-select">Select</label></input>
+						<input type="checkbox" id="v-move"><label for="v-move">Move</label></input>
+						<input type="checkbox" id="v-rotate"><label for="v-rotate">Rotate</label></input>
+						<input type="checkbox" id="v-text"><label for="v-text">Text</label></input>
+						<input type="checkbox" id="v-image"><label for="v-image">Image</label></input>
+						<input type="checkbox" id="v-undo"><label for="v-undo">Undo</label></input>
 					</div><br/>
 					<div id="color-tools">
 						<svg id="sample-container" width="100" height="100">
@@ -198,8 +209,9 @@
 			<div id="chat" class="ui-widget ui-widget-content ui-corner-all">
 				<div id="chat-display"></div>
 				<div id="chat-tools">
-					<input id="chat-input" type="text" />
-					<input id="post-chat" type="button" value="Post" /><br/>
+					<input id="chat-input"></textarea>
+					<input id="post-chat" type="button" value="Post Message" />
+					<button id="post-link"><img width="15px" src="img/link.png" /></button>
 				</div>
 			</div>
 		</div>
