@@ -62,24 +62,6 @@ public class UserDao {
     }
 
     /**
-     * Returns the user with the given credentials or null otherwise.
-     *
-     * @param username The username of the user logging in.
-     * @param password The password of the user logging in.
-     * @return The user object or null.
-     */
-    public User getUserByCreds(String username, String password) {
-        try {
-            return em.createQuery("SELECT u FROM User u WHERE u.username = :username AND u.password = :password", User.class)
-                    .setParameter("username", username)
-                    .setParameter("password", password)
-                    .getSingleResult();
-        } catch (NoResultException ex) {
-            return null;
-        }
-    }
-
-    /**
      * Returns a user with the given user id or null otherwise.
      *
      * @param userid The user id to look up.
