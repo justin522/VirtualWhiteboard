@@ -507,10 +507,10 @@ $(document).ready(function(){
 		disabled: true
 	});
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addCanvasLayer();});
-	$( "#vl-button" ).button().click(function(){$.whiteboard.addSVGLayer();});
+	$( "#rl-button" ).button().click(function(){$.whiteboard.addSVGLayer();});
 //replace "fakerooms.json" with rooms endpoint
-	//$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
-	$.getJSON( "fakerooms.json", function( data ) {
+	$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
+	//$.getJSON( "fakerooms.json", function( data ) {
 		//var rooms=data.split(",");
 		//for(var room in rooms)$("<option>"+rooms[room]+"</option>").appendTo("#room-select");
 		var rooms=data.rooms;
@@ -526,10 +526,14 @@ $(document).ready(function(){
 				var room=$('#room-input').val();
 				if(room!==""&&user!==""){
 					userName=$('#input-usr').val();
-					$.whiteboard.socket().emit('room', user, room);
 //replace "fakesignin.txt" with signin endpoint
-					$.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
-					$( this ).dialog( "close" );
+					$.post( "http://cs597-VirtualWhiteboardLB/room/create/"+room+"/userid/"+user, function() {
+						$.whiteboard.socket().emit('room', user, room);
+						$( this ).dialog( "close" );
+					});
+					// $.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
+					// $.whiteboard.socket().emit('room', user, room);
+					// $( this ).dialog( "close" );
 				}else if(room==="")alert("Room name cannot be blank");
 				else alert("User name cannot be blank");
 			}

@@ -2,7 +2,7 @@
  * GET home page.
  */
 var serverName = process.env.VCAP_APP_HOST ? process.env.VCAP_APP_HOST + ":" + process.env.VCAP_APP_PORT : 'localhost:3000';
-console.log('servernaem ',serverName);
+console.log('servername',serverName);
 
 exports.index = function (req, res) {
     //save user from previous session (if it exists)

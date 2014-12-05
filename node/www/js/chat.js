@@ -39,3 +39,5 @@ $.whiteboard.socket().on('link',function(m){
 	var desc = message.desc;
 	$("#chat-display").append("<p><span class='"+usr+"'>"+usr+": </span>posted a link: <a href='"+link+"'>"+desc+"</a>");
 });
+
+
