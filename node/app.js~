@@ -39,13 +39,11 @@ io.sockets.on('connection',function(socket){
 		console.log('socektid ' +socket.id);
 	
 		console.log(userName + " has joined " + room);
+		client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms",function(data,response){
+			console.log(data);
+		});
 		client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/"+room,function(data,response){
 			console.log(data);
-			//Parse data to get drawing instructions and chat messages then uncomment lines below to send to client
-			//var drawReply = data.data;
-			//io.to(room).emit('draw',reply);
-			//var drawReply = data.data;
-			//io.to(room).emit('message',reply);
 		});
 		
 		if(userName){
