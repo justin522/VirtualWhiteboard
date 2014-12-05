@@ -1,0 +1,35 @@
+#
+# Vagrant configuration for Virtual Whiteboard
+#
+# requires VirtualBox 4.3+ and Vagrant 1.6.0+
+Vagrant.require_version ">= 1.6.0"
+VAGRANTFILE_API_VERSION = "2"
+
+VAGRANT_BOX = "ubuntu/trusty32"
+#VAGRANT_BOX = "ubuntu/trusty64"
+HOSTNAME = "whiteboard-dev"
+IP_ADDRESS = "192.168.5.97"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.define HOSTNAME do |dev|
+    dev.vm.box = VAGRANT_BOX
+    dev.vm.hostname = HOSTNAME + ".box"
+    dev.vm.network "private_network", ip: IP_ADDRESS
+    dev.vm.synced_folder "..", "/home/vagrant/VirtualWhiteboard"
+
+    dev.vm.provider "virtualbox" do |vb|
+      vb.name = HOSTNAME
+      vb.memory = 768
+      vb.cpus = 1
+    end
+
+    dev.vm.provision "shell", inline: "apt-get -y update && apt-get -y upgrade"
+
+    dev.vm.provision "puppet" do |puppet|
+      puppet.manifests_path = "puppet/manifests"
+      puppet.manifest_file = "site.pp"
+      puppet.module_path = "puppet/modules"
+      puppet.options = "--verbose"
+    end
+  end
+end
