@@ -81,7 +81,7 @@
 			.ui-tabs-panel{
 				background:white;
 				color:black;
-				overflow: auto;
+				overflow-y:scroll;
 			}
 			
 			
@@ -127,6 +127,7 @@
 		<script src='lib/spectrum.js'></script>
 		<script src='js/whiteboard.js'></script>
 		<script src='js/chat.js'></script>
+		<script src='js/svgTools.js'></script>
 		<!--<script src='js/canvasTools.js'></script>-->
 	</head>
 
@@ -201,13 +202,11 @@
 				</select><br />
 				<div id="post-room"><input id="room-input" type="text" /></div>
 				User name:<input id="input-usr" type="text" value="Guest" /><br />
-				Password: <input id="input-password" type="password" /><br />
+				<!--Password: <input id="input-password" type="password" /><br />-->
 		 </div>
 		 <div id="link-dialog" title="Input link data.">
-				URL:<br />
-				<input id='link-url' /><br />
-				Description:<br />
-				<input id="link-desc" type="text" /><br />
+				Description: <input id="link-desc" type="text" /><br />
+				URL: http://&thinsp;<input id='link-url' /><br />
 		 </div>
 	</body>
 </html>

@@ -10,8 +10,8 @@ $.whiteboard.socket().on('message',function(m){
 		case "link":
 			var link = message.msg.url;
 			var desc = message.msg.desc;
-			var message=$("<p><span class='"+usr+"'>"+usr+": </span>posted a link: <a href='"+link+" target='_blank'>"+desc+"</a></p>");
-			$("#links").append("<a href='"+link+" target='_blank'>"+desc+"</a>");
+			var message=$("<p><span class='"+usr+"'>"+usr+": </span>posted a link: <a href='http://"+link+"' target='_blank'>"+desc+"</a></p>");
+			$("#links").append("<a href='http://"+link+"' target='_blank'>"+desc+"</a><br />");
 			$("#chat-display").append(message);
 			break;
 	}
@@ -29,6 +29,7 @@ $.whiteboard.socket().on('join',function(m){
 $.whiteboard.socket().on('leave',function(m){
 	var message = JSON.parse(m);
 	var usr = message.user;
+	$('#'+usr).remove();
 });
 
 

@@ -17,8 +17,8 @@ var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 var args = {
-data:"",
-headers:{"Content-Type":"application/json"}
+	data:"",
+	headers:{"Content-Type":"application/json"}
 };
 var log = {};
 log.users = [];
@@ -38,12 +38,14 @@ io.sockets.on('connection',function(socket){
 		socket.join(room);
 		console.log('socektid ' +socket.id);
 	
-		console.log(userName + " has joined " + room); 
-		// client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms",function(data,response){
-			// console.log(data);
-		// });
+		console.log(userName + " has joined " + room);
 		// client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/"+room,function(data,response){
 			// console.log(data);
+			// //Parse data to get drawing instructions and chat messages then uncomment lines below to send to client
+			// var drawReply = data.data;
+			// io.to(room).emit('draw',reply);
+			// var drawReply = data.data;
+			// io.to(room).emit('message',reply);
 		// });
 		if(typeof drawinginstructions[room] !== 'undefined'){
 			for (var key in drawinginstructions[room])

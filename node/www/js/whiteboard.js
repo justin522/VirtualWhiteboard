@@ -295,6 +295,14 @@
 		},
 		_addActionLayer: function(type) {
 			var actionlayer=this.addSVGLayer();
+			var defs=svg("defs",{cx:"100",cy:"100",r:"50",fill:"red"});
+			var grad=svg("radialGradient",{id:"eraser-grad"});
+			$(grad).append(svg("stop",{offset:"0%", "stop-opacity":".5", "stop-color":"black"}),svg("stop",{offset:"100%", "stop-opacity":"0"}));
+			$(defs).append(grad);
+			var circ=svg("circle",{cx:"100",cy:"100",r:"50",fill:"url(#eraser-grad)"});
+			actionlayer.append(defs,circ);
+			svg(circ,{},"remove");
+			//actionlayer.append(svg("circle",{cx:"100",cy:"100",r:"50",fill:"url(#eraser-gradient)"}));
 			$.whiteboard.setTool("realtime");
 			return actionlayer;
 		},
@@ -327,6 +335,7 @@ $(document).ready(function(){
 		$('#chat-input').val('');
 	});
 	$('#link-dialog').dialog({
+		width: 360,
 		buttons: [
 			{
 				text: "OK",
@@ -510,13 +519,14 @@ $(document).ready(function(){
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addSVGLayer();});
 //replace "fakerooms.json" with rooms endpoint
 	$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
-	//$.getJSON( "fakerooms.json", function( data ) {
+	// $.getJSON( "fakerooms.json", function( data ) {
 		//var rooms=data.split(",");
 		//for(var room in rooms)$("<option>"+rooms[room]+"</option>").appendTo("#room-select");
 		var rooms=data.rooms;
 		for(var room in rooms)$("<option>"+rooms[room].roomName+"</option>").appendTo("#room-select");
 	});
 	$( "#signin" ).dialog({
+		width: 235,
 		closeOnEscape: false,
 		modal: true,
 		buttons: {
