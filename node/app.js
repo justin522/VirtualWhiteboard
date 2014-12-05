@@ -45,18 +45,7 @@ io.sockets.on('connection',function(socket){
 		client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/"+room,function(data,response){
 			console.log(data);
 		});
-		// if(typeof drawinginstructions[room] !== 'undefined'){
-			// for (var key in drawinginstructions[room])
-			// {
-				// socket.emit('draw',drawinginstructions[room][key]);
-			// }
-		// }
-		// if(typeof messages[room] !== 'undefined'){
-			// for (var key in messages[room])
-			// {
-				// socket.emit('message',messages[room][key]);
-			// }
-		// }else if(room)messages[room] = [];
+		
 		if(userName){
 			var loginMessage = JSON.stringify({action:'join',user:userName,msg:userName+" has joined the room."});	
 			args.data=loginMessage;
