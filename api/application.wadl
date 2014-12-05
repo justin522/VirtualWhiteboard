@@ -67,6 +67,25 @@
         </wadl:response>
       </wadl:method>
     </wadl:resource>
+    <wadl:resource path="/rest/room/create/{roomname}">
+      <wadl:param name="roomname" style="template">
+        <wadl:doc>
+          <![CDATA[The roomname for the new room.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:method name="POST">
+        <wadl:doc>
+          <![CDATA[Creates a new room with the given roomname.]]>
+        </wadl:doc>
+        <wadl:request/>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[The newly created room.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
     <wadl:resource path="/rest/users/create/{username}">
       <wadl:param name="username" style="template">
         <wadl:doc>
@@ -81,30 +100,6 @@
         <wadl:response>
           <wadl:doc>
             <![CDATA[The newly created user.]]>
-          </wadl:doc>
-          <wadl:representation mediaType="application/json"/>
-        </wadl:response>
-      </wadl:method>
-    </wadl:resource>
-    <wadl:resource path="/rest/room/create/{roomname}/userid/{userid}">
-      <wadl:param name="roomname" style="template">
-        <wadl:doc>
-          <![CDATA[The roomname for the new room.]]>
-        </wadl:doc>
-      </wadl:param>
-      <wadl:param name="userid" style="template">
-        <wadl:doc>
-          <![CDATA[The user who created the room.]]>
-        </wadl:doc>
-      </wadl:param>
-      <wadl:method name="POST">
-        <wadl:doc>
-          <![CDATA[Creates a new room with the given roomname.]]>
-        </wadl:doc>
-        <wadl:request/>
-        <wadl:response>
-          <wadl:doc>
-            <![CDATA[The newly created room.]]>
           </wadl:doc>
           <wadl:representation mediaType="application/json"/>
         </wadl:response>
@@ -163,30 +158,6 @@
         <wadl:response>
           <wadl:doc>
             <![CDATA[The newly saved message.]]>
-          </wadl:doc>
-          <wadl:representation mediaType="application/json"/>
-        </wadl:response>
-      </wadl:method>
-    </wadl:resource>
-    <wadl:resource path="/rest/users/login/{username}/password/{password}">
-      <wadl:param name="username" style="template">
-        <wadl:doc>
-          <![CDATA[The username of the user logging in.]]>
-        </wadl:doc>
-      </wadl:param>
-      <wadl:param name="password" style="template">
-        <wadl:doc>
-          <![CDATA[The password of the user logging in.]]>
-        </wadl:doc>
-      </wadl:param>
-      <wadl:method name="POST">
-        <wadl:doc>
-          <![CDATA[Logs in the user with the given id. No password required.]]>
-        </wadl:doc>
-        <wadl:request/>
-        <wadl:response>
-          <wadl:doc>
-            <![CDATA[The user who is now logged in.]]>
           </wadl:doc>
           <wadl:representation mediaType="application/json"/>
         </wadl:response>
