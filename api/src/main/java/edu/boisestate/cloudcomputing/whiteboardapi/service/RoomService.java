@@ -36,17 +36,15 @@ public class RoomService {
 	 *
 	 * @param roomname
 	 *            The roomname for the new room.
-	 * @param userid
-	 *            The user who created the room.
 	 * @return The newly created room.
 	 * @throws JsonProcessingException
 	 * @throws RoomAlreadyExistsException
 	 */
 	@POST
-	@Path("/create/{roomname}/userid/{userid}")
+	@Path("/create/{roomname}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String createRoom(@PathParam("roomname") String roomname,
-			@PathParam("userid") Long userid) throws JsonProcessingException,
+	public String createRoom(@PathParam("roomname") String roomname
+			) throws JsonProcessingException,
 			RoomAlreadyExistsException {
 		Room room = roomDao.getRoomByName(roomname);
 		if (room != null) {
@@ -54,7 +52,7 @@ public class RoomService {
 					ApiUtil.formatError("Room already exists"));
 		}
 
-		room = roomDao.createRoom(roomname, userid);
+		room = roomDao.createRoom(roomname);
 		return om.writeValueAsString(room);
 	}
 

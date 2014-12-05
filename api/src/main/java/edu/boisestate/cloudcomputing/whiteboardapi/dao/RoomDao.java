@@ -27,12 +27,10 @@ public class RoomDao {
 	 * 
 	 * @param roomname
 	 *            The roomname for the new Room.
-	 * @param userid
-	 *            The userid who created it
 	 * @return newly created Room
 	 */
-	public Room createRoom(String roomname, Long userid) {
-		Room room = new Room(roomname, userid);
+	public Room createRoom(String roomname) {
+		Room room = new Room(roomname);
 
 		em.getTransaction().begin();
 		em.persist(room);

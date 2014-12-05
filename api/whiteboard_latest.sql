@@ -42,7 +42,6 @@ DROP TABLE IF EXISTS `Room`;
 CREATE TABLE `Room` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `roomname` varchar(50) NOT NULL,
-  `userid` bigint(20) NOT NULL,
   `created` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `roomname` (`roomname`)
@@ -92,4 +91,4 @@ CREATE TABLE `WhiteboardEdit` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-12-03 12:06:33
+-- Dump completed on 2014-12-04 19:40:39

@@ -15,7 +15,6 @@ CREATE TABLE User (
 CREATE TABLE Room (
     id BIGINT NOT NULL AUTO_INCREMENT,
     roomname VARCHAR(50) NOT NULL,
-    userid BIGINT NOT NULL,
     created DATETIME NOT NULL,
 
     PRIMARY KEY (id),

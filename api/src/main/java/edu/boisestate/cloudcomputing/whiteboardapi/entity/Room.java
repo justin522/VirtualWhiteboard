@@ -17,9 +17,6 @@ public class Room {
 	@Column
 	private String roomname;
 
-	@Column
-	private Long userid;
-
     @Transient
     private List<JsonNode> chat;
 
@@ -30,9 +27,8 @@ public class Room {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date created;
 
-	public Room(String roomname, Long userid) {
+	public Room(String roomname) {
 		this.roomname = roomname;
-		this.userid = userid;
 	}
 
 	public Room() {
@@ -74,5 +70,4 @@ public class Room {
 	protected void onCreate() {
 		created = new Date();
 	}
-
 }
