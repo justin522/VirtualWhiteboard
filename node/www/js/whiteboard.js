@@ -527,7 +527,7 @@ $(document).ready(function(){
 				if(room!==""&&user!==""){
 					userName=$('#input-usr').val();
 //replace "fakesignin.txt" with signin endpoint
-					$.post( "http://cs597-VirtualWhiteboardLB/room/create/"+room, function() {
+					$.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
 						$.whiteboard.socket().emit('room', user, room);
 						$( this ).dialog( "close" );
 					});
