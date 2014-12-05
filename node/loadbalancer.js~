@@ -1,13 +1,12 @@
 //http://goldfirestudios.com/blog/136/Horizontally-Scaling-Node.js-and-WebSockets-with-Redis
 var http = require('http');
 var proxy = require('http-proxy');
-//var request = require('request');
- 
+
 http.globalAgent.maxSockets = 10240;
  
 // Define the servers to load balance.
 var servers = [
-{host: 'cs597-VirtualWhiteboardNodeOne', port: 3000},
+{host: 'cs597-VirtualWhiteboardNodeThree', port: 3000},
 {host: 'cs597-VirtualWhiteboardNodeTwo', port: 3000}
 ];
 var failoverTimer = [];
@@ -86,14 +85,14 @@ var server = http.createServer(function(req,res)
 {
 	var proxyIndex = selectServer(req, res);
 	var proxy = proxies[proxyIndex];
-	console.log('blancing request to: ',proxy);
+	//console.log('blancing request to: ',proxy);
 	proxy.web(req, res);
 	proxy.on('error', function(err) 
 	{
-		Console.log('proxy error',err); 
+		console.log('proxy error',err); 
 	});
 server.on('error',function(err){
-	Console.log('server error');
+	console.log('server error');
 })
 });
  
