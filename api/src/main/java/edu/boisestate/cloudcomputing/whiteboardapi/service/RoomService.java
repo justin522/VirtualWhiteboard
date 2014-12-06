@@ -46,13 +46,12 @@ public class RoomService {
 	public String createRoom(@PathParam("roomname") String roomname
 			) throws JsonProcessingException,
 			RoomAlreadyExistsException {
-		Room room = roomDao.getRoomByName(roomname);
-		if (room != null) {
-			throw new RoomAlreadyExistsException(
-					ApiUtil.formatError("Room already exists"));
-		}
+		Room room = roomDao.createRoom(roomname);
+        if (room == null) {
+            throw new RoomAlreadyExistsException(
+                    ApiUtil.formatError("Room already exists"));
+        }
 
-		room = roomDao.createRoom(roomname);
 		return om.writeValueAsString(room);
 	}
 

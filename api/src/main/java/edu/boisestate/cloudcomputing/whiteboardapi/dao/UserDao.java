@@ -1,9 +1,10 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.dao;
 
-import edu.boisestate.cloudcomputing.whiteboardapi.util.DbConnection;
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.User;
+import edu.boisestate.cloudcomputing.whiteboardapi.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.exception.ConstraintViolationException;
 
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +13,10 @@ import java.util.List;
  * Handles DB reads/writes for the User table.
  */
 public class UserDao {
-    private EntityManager em;
+    private Session session;
 
     public UserDao() {
-        em = DbConnection.getEntityManager();
+        session = HibernateUtil.getSessionFactory().openSession();
     }
 
     /**
@@ -28,9 +29,17 @@ public class UserDao {
     public User createUser(String username, String password) {
         User user = new User(username, password);
 
-        em.getTransaction().begin();
-        em.persist(user);
-        em.getTransaction().commit();
+        try {
+            session.getTransaction().begin();
+            session.persist(user);
+            session.getTransaction().commit();
+        } catch (ConstraintViolationException e) {
+            return null;
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
 
         return user;
     }
@@ -53,11 +62,13 @@ public class UserDao {
      */
     public User getUserByName(String username) {
         try {
-            return em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
+            return (User) session.createQuery("SELECT u FROM User u WHERE u.username = :username")
                     .setParameter("username", username)
-                    .getSingleResult();
+                    .uniqueResult();
         } catch (NoResultException ex) {
             return null;
+        } finally {
+            session.close();
         }
     }
 
@@ -69,11 +80,13 @@ public class UserDao {
      */
     public User getUserById(Long userid) {
         try {
-            return em.createQuery("SELECT u FROM User u WHERE u.id = :userid", User.class)
+            return (User) session.createQuery("SELECT u FROM User u WHERE u.id = :userid")
                     .setParameter("userid", userid)
-                    .getSingleResult();
+                    .uniqueResult();
         } catch (NoResultException ex) {
             return null;
+        } finally {
+            session.close();
         }
     }
 
@@ -82,12 +95,15 @@ public class UserDao {
      *
      * @return The list of users.
      */
+    @SuppressWarnings("unchecked")
     public List<User> getUsers() {
         try {
-            return em.createQuery("SELECT u FROM User u ORDER BY u.username", User.class)
-                    .getResultList();
+            return (List<User>) session.createQuery("SELECT u FROM User u ORDER BY u.username")
+                    .list();
         } catch (NoResultException ex) {
             return new ArrayList<>();
+        } finally {
+            session.close();
         }
     }
 }

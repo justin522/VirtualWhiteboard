@@ -34,12 +34,11 @@ public class UserService {
     public String createUser(
             @PathParam("username") String username
     ) throws JsonProcessingException {
-        User user = getUserByName(username);
-        if (user != null) {
+        User user = userDao.createUser(username);
+        if (user == null) {
             throw new UserAlreadyExistsException(ApiUtil.formatError("User already exists"));
         }
 
-        user = userDao.createUser(username);
         return om.writeValueAsString(user);
     }
 

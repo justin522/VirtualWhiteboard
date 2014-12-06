@@ -22,11 +22,12 @@ public class ChatMessage {
     @Type(type = "text")
     private String data;
 
-    @Column(name = "created", nullable = false, updatable = false)
+    @Column(name = "created", nullable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
 
     public ChatMessage() {
+        created = new Date();
     }
 
     public Long getId() {
@@ -59,10 +60,5 @@ public class ChatMessage {
 
     public Date getCreated() {
         return created;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        created = new Date();
     }
 }

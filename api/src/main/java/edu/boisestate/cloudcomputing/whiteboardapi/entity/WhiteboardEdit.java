@@ -27,6 +27,7 @@ public class WhiteboardEdit {
     private Date created;
 
     public WhiteboardEdit() {
+        created = new Date();
     }
 
     public Long getId() {
@@ -59,10 +60,5 @@ public class WhiteboardEdit {
 
     public Date getCreated() {
         return created;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        created = new Date();
     }
 }

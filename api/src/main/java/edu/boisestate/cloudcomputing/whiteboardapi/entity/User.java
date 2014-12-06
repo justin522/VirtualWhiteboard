@@ -25,9 +25,11 @@ public class User {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+        this.created = new Date();
     }
 
     public User() {
+        this.created = new Date();
     }
 
     public Long getId() {
@@ -53,10 +55,5 @@ public class User {
 
     public Date getCreated() {
         return created;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        created = new Date();
     }
 }

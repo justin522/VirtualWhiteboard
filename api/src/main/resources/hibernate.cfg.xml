@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="connection.url">jdbc:mysql://cs597-VirtualWhiteboardDB:3306/whiteboard?zeroDateTimeBehavior=convertToNull&amp;autoReconnect=true</property>
+        <!--<property name="connection.url">jdbc:mysql://localhost:3306/whiteboard?zeroDateTimeBehavior=convertToNull&amp;autoReconnect=true</property>-->
+        <property name="connection.username">whiteboard</property>
+        <property name="connection.password">whiteboard</property>
+
+        <property name="current_session_context_class">thread</property>
+        <property name="show_sql">false</property>
+        <property name="format_sql">false</property>
+        <property name="dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+        <property name="hbm2ddl.auto">validate</property>
+
+        <property name="c3p0.min_size">5</property>
+        <property name="c3p0.max_size">100</property>
+        <property name="c3p0.timeout">600</property>
+        <property name="c3p0.max_statements">0</property>
+        <property name="c3p0.idle_test_period">1800</property>
+
+        <mapping class="edu.boisestate.cloudcomputing.whiteboardapi.entity.ChatMessage"/>
+        <mapping class="edu.boisestate.cloudcomputing.whiteboardapi.entity.Room"/>
+        <mapping class="edu.boisestate.cloudcomputing.whiteboardapi.entity.User"/>
+        <mapping class="edu.boisestate.cloudcomputing.whiteboardapi.entity.WhiteboardEdit"/>
+    </session-factory>
+</hibernate-configuration>

@@ -1,10 +1,11 @@
 package edu.boisestate.cloudcomputing.whiteboardapi.dao;
 
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
 import edu.boisestate.cloudcomputing.whiteboardapi.entity.Room;
-import edu.boisestate.cloudcomputing.whiteboardapi.util.DbConnection;
+import edu.boisestate.cloudcomputing.whiteboardapi.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.exception.ConstraintViolationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +17,10 @@ import java.util.List;
  *
  */
 public class RoomDao {
-	private EntityManager em;
+	private Session session;
 
 	public RoomDao() {
-		em = DbConnection.getEntityManager();
+		session = HibernateUtil.getSessionFactory().openSession();
 	}
 
 	/**
@@ -32,9 +33,17 @@ public class RoomDao {
 	public Room createRoom(String roomname) {
 		Room room = new Room(roomname);
 
-		em.getTransaction().begin();
-		em.persist(room);
-		em.getTransaction().commit();
+		try {
+			session.getTransaction().begin();
+			session.persist(room);
+			session.getTransaction().commit();
+		} catch (ConstraintViolationException e) {
+			return null;
+		} finally {
+			if (session != null) {
+				session.close();
+			}
+		}
 
 		return room;
 	}
@@ -48,13 +57,13 @@ public class RoomDao {
 	 */
 	public Room getRoomByName(String roomname) {
 		try {
-			return em
-					.createQuery(
-							"SELECT r FROM Room r WHERE r.roomname = :roomname",
-							Room.class).setParameter("roomname", roomname)
-					.getSingleResult();
+			return (Room) session.createQuery("SELECT r FROM Room r WHERE r.roomname = :roomname")
+					.setParameter("roomname", roomname)
+					.uniqueResult();
 		} catch (NoResultException ex) {
 			return null;
+		} finally {
+			session.close();
 		}
 	}
 
@@ -67,12 +76,13 @@ public class RoomDao {
 	 */
 	public Room getRoomById(Long roomid) {
 		try {
-			return em
-					.createQuery("SELECT r FROM Room r WHERE r.id = :roomid",
-							Room.class).setParameter("roomid", roomid)
-					.getSingleResult();
+			return (Room) session.createQuery("SELECT r FROM Room r WHERE r.id = :roomid")
+					.setParameter("roomid", roomid)
+					.uniqueResult();
 		} catch (NoResultException ex) {
 			return null;
+		} finally {
+			session.close();
 		}
 	}
 
@@ -81,12 +91,15 @@ public class RoomDao {
 	 * 
 	 * @return list of available Rooms
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Room> getRoomsList() {
 		try {
-			return em.createQuery("SELECT r FROM Room r ORDER BY r.roomname", Room.class)
-					.getResultList();
+			return (List<Room>) session.createQuery("SELECT r FROM Room r ORDER BY r.roomname")
+					.list();
 		} catch (NoResultException ex) {
 			return new ArrayList<>();
+		} finally {
+			session.close();
 		}
 	}
 }

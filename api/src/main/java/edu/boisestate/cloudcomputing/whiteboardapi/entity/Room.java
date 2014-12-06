@@ -29,9 +29,11 @@ public class Room {
 
 	public Room(String roomname) {
 		this.roomname = roomname;
+		this.created = new Date();
 	}
 
 	public Room() {
+		this.created = new Date();
 	}
 
 	public Long getId() {
@@ -64,10 +66,5 @@ public class Room {
 
     public Date getCreated() {
 		return created;
-	}
-
-	@PrePersist
-	protected void onCreate() {
-		created = new Date();
 	}
 }
