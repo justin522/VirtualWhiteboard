@@ -517,7 +517,8 @@
 $(document).ready(function(){
 	$("#whiteboard").workspace();
 	$("#post-chat").click(function(){
-		var m = {type:'message',data:$('#chat-input').val()};
+		var m = $('#chat-input').val();
+		//var m = {type:'message',data:$('#chat-input').val()};
 		$.whiteboard.socket().emit('msg',$.whiteboard.userName, m);
 		$('#chat-input').val('');
 	});
@@ -767,7 +768,7 @@ $(document).ready(function(){
 					//});
 					// $.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
 					// $.whiteboard.socket().emit('room', user, room);
-					// $.whiteboard.userName=user;
+					 $.whiteboard.userName=user;
 					 $( this ).dialog( "close" );
 				}else if(room==="")alert("Room name cannot be blank");
 				else alert("User name cannot be blank");

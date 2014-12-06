@@ -6,7 +6,7 @@ console.log("message" + m);
 	switch(message.action){
 		case "message":
 			var msg = message.msg;
-			console.log('got message: '+ msg);
+			console.log('got message: ' + msg);
 			$("#chat-display").append("<span class='"+usr+"'>"+usr+": </span>"+msg+"<br />");
 			break;
 		case "link":
@@ -24,7 +24,7 @@ $.whiteboard.socket().on('join',function(m){
 	console.log("joined" + m);
 	var message = JSON.parse(m);
 	var usr = message.user;
-	var msg = message.msg;
+	var msg = message.msg.data;
 	var p=$("<span class='"+usr+"'>"+usr+": </span>"+msg+"<br />");
 	$("#chat-display").append(p);
 	$.whiteboard.addStyle("."+usr+"{color:rgb("+Math.floor(Math.random()*128)+","+Math.floor(Math.random()*128)+","+Math.floor(Math.random()*128)+");}");

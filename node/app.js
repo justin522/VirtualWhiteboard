@@ -44,7 +44,7 @@ io.sockets.on('connection',function(socket){
 		args.data = room;
 		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room,args,function(data,response)
 		{
-			//console.log(data);
+			console.log(data);
 			if(data)
 			{
 				args.data = userName;
@@ -55,14 +55,19 @@ io.sockets.on('connection',function(socket){
 					{
 						client.get("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/"+room,function(data3,response3)
 						{
-							console.log('caht: '+data3.chat);
+							console.log(data3);
 							for(var key in data3.chat)
 							{
 								console.log(key+ ": " +data3.chat[key].msg);
-var m = {type:'message',data:data3.chat[key].msg};
-var reply = JSON.stringify({action:'message',user:data3.chat[key].user,msg:m});
-								io.to(room).emit('message',reply);
+var reply = JSON.stringify({action:'message',user:data3.chat[key].user,msg:data3.chat[key].msg});
+								//io.to(room).emit('message',reply);
+socket.emit('message',reply);
 							}
+							for(var obj in data3.whiteboard)
+{
+	var drawing =JSON.stringify({action:'draw',user:data3.whiteboard[obj].user,data:data3.whiteboard[obj].data})
+socket.emit('draw',drawing);
+}
 						});
 						//console.log(data);
 					}
@@ -102,6 +107,7 @@ var reply = JSON.stringify({action:'message',user:data3.chat[key].user,msg:m});
 		var reply = JSON.stringify({action:'message',user:usr,msg:m});
 		args.data=reply;
 		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+socket.room+"/user/"+usr,args,function(data,response){
+			console.log('insert response: ' +data);
 		});
 		console.log('reply: '+  reply);
 		io.to(socket.room).emit('message',reply);
