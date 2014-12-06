@@ -12,7 +12,8 @@
 		fillColor: "none",
 		strokeColor:"black",
 		strokeWidth: 1,
-		layercount: 0
+		layercount: 0,
+		imgUrl:"/img/noimage.png"
 	},
 	$.whiteboard.canvasMode=function(tool){
 		$.whiteboard.mode="canvas";
@@ -148,7 +149,7 @@
 					x=null;
 					y=null;
 					$(wb.indicators["line"]).appendTo(wb.layers[0]);
-					svg(wb.indicators["line"],{x1:x,y1:y,x2:x,y2:y,stroke:wb.strokeColor,"stroke-width":wb.strokeWidth},"update-attributes");
+					svg(wb.indicators["line"],{},"remove");
 					preview=false;
 				}).mousemove(function(e){
 					var point=wb.getMousePosition(e);
@@ -180,7 +181,7 @@
 						x=null;
 						y=null;
 						svg(wb.indicators["rect"],{},"remove");
-						perview=false;
+						preview=false;
 					}
 				}).mousemove(function(e){
 					if(preview){
@@ -193,24 +194,70 @@
 					}
 				});
 				break;
-			case "circle":
-				$(wb.workspace).css('cursor','url(img/circle-marker.png), auto');
-				var cx=null;
-				var cy=null;
+			case "image":
+				$(wb.workspace).css('cursor','url(img/imageicon.png), auto');
+				var x=null;
+				var y=null;
+				var preview=false;
 				al.mousedown(function(e){
 					var point=wb.getMousePosition(e);
-					cx=point.x;
-					cy=point.y;
+					x=point.x;
+					y=point.y;
+					$(wb.indicators["image"]).appendTo(wb.layers[0]);
+					svg(wb.indicators["image"],{"xlink:href":wb.imgUrl,x:x,y:y,width:0,height:0},"update-attributes");
+					preview=true;
 				});
 				al.mouseup(function(e){
 					if(null!==x){
 						var point=wb.getMousePosition(e);
-						r=Math.sqrt(Math.pow(point.x-cx,2)+Math.pow(point.y-cy,2));
+						var w=point.x-x;
+						var h=point.y-y;
+						wb.emitImage(x,y,w,h);
+						x=null;
+						y=null;
+						svg(wb.indicators["image"],{},"remove");
+						preview=false;
+					}
+				}).mousemove(function(e){
+					if(preview){
+						var point=wb.getMousePosition(e);
+						var w=Math.abs(point.x-x);
+						var h=Math.abs(point.y-y);
+						var xloc=Math.min(x,point.x);
+						var yloc=Math.min(y,point.y);
+						svg(wb.indicators["image"],{x:xloc,y:yloc,width:w,height:h},"update-attributes");
+					}
+				});
+				break;
+			case "circle":
+				$(wb.workspace).css('cursor','url(img/circle-marker.png), auto');
+				var cx=null;
+				var cy=null;
+				var preview=false;
+				al.mousedown(function(e){
+					var point=wb.getMousePosition(e);
+					cx=point.x;
+					cy=point.y;
+					$(wb.indicators["circle"]).appendTo(wb.layers[0]);
+					svg(wb.indicators["circle"],{cx:cx,cy:cy,r:0,fill:wb.fillColor,stroke:wb.strokeColor,"stroke-width":wb.strokeWidth},"update-attributes");
+					preview=true;
+				});
+				al.mouseup(function(e){
+					if(null!==x){
+						var point=wb.getMousePosition(e);
+						var r=Math.sqrt(Math.pow(point.x-cx,2)+Math.pow(point.y-cy,2));
 						wb.emitCircle(cx,cy,r);
 						cx=null;
 						cy=null;
 					}
+					svg(wb.indicators["circle"],{},"remove");
+					perview=false;
 				}).mousemove(function(e){
+					if(preview){
+						var point=wb.getMousePosition(e);
+						var r=Math.sqrt(Math.pow(point.x-cx,2)+Math.pow(point.y-cy,2));
+						svg(wb.indicators["circle"],{r:r},"update-attributes");
+					}
 				});
 				break;
 		}
@@ -270,6 +317,16 @@
 			ctx.stroke();
 		}
 		ctx.closePath();
+	},
+	$.whiteboard.emitImage=function(x,y,w,h) {
+		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|image|'+$.whiteboard.imgUrl+'|'+x+'|'+y+'|'+w+'|'+h});
+		$.whiteboard.socket().emit('drawing',data);
+	},
+	$.whiteboard.drawImage=function(layer,url,x,y,w,h){
+		var img=$("<img />").addClass("tmp").attr("src",url).width(w).height(h).appendTo("body")[0];
+		canvas=$('#'+layer)[0];
+		ctx=canvas.getContext("2d");
+		ctx.drawImage(img,x,y);
 	},
 	$.whiteboard.emitCircle=function(x,y,r) {
 		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|circle|'+x+'|'+y+'|'+r+'|'+$.whiteboard.fillColor+'|'+$.whiteboard.strokeColor+'|'+$.whiteboard.strokeWidth});
@@ -408,12 +465,29 @@
 			});
 			wb.setTool("realtime");
 			
-			indicator=wb.indicators["rect"]=svg("rect",{class:"strokeWidth strokeColor strokeFill",x:"0",y:"0",width:"0",height:"0",fill:wb.fillColor,stroke:wb.strokeColor,"stroke-width":"1"});
+			indicator=wb.indicators["rect"]=svg("rect",{class:"strokeWidth strokeColor fillColor",x:"0",y:"0",width:"0",height:"0",fill:wb.fillColor,stroke:wb.strokeColor,"stroke-width":"1"});
 			actionlayer.append(defs,indicator);
 			svg(indicator,{},"remove");
 			$(indicator).on("resize",function(e,d){
 				svg(this,{r:d/3},"update-attributes");
 			}).on("changeStrokeColor",function(e,color){
+				svg(this,{fill:color},"update-attributes");
+			}).on("changeFillColor",function(e,color){
+				svg(this,{fill:color},"update-attributes");
+			});
+			
+			indicator=wb.indicators["image"]=svg("image",{class:"imagePreview","xlink:href":"img/noimage.png",x:"0",y:"0",width:"0",height:"0"});
+			actionlayer.append(defs,indicator);
+			svg(indicator,{},"remove");
+
+			indicator=wb.indicators["circle"]=svg("circle",{class:"strokeWidth strokeColor fillColor",cx:"0",cy:"0",r:"0",fill:wb.fillColor,stroke:wb.strokeColor,opacity:".5"});
+			actionlayer.append(defs,indicator);
+			svg(indicator,{},"remove");
+			$(indicator).on("resize",function(e,d){
+				svg(this,{r:d/3},"update-attributes");
+			}).on("changeStrokeColor",function(e,color){
+				svg(this,{fill:color},"update-attributes");
+			}).on("changeFillColor",function(e,color){
 				svg(this,{fill:color},"update-attributes");
 			});
 			wb.setTool("realtime");
@@ -458,6 +532,21 @@ $(document).ready(function(){
 					$('#link-url,#link-desct').val('');
 					$( this ).dialog( "close" );
 					
+				}
+			}
+		]
+	}).dialog("close");
+	$('#image-dialog').dialog({
+		width: 360,
+		buttons: [
+			{
+				text: "OK",
+				click: function() {
+					var url=$('#img-url').val();
+					if(url.indexOf("http")!==0)url=url+"http://";
+					$.whiteboard.imgUrl=url;//.replace("Microsoft", "W3Schools");
+					$('#img-url').val('');
+					$( this ).dialog( "close" );
 				}
 			}
 		]
@@ -623,9 +712,8 @@ $(document).ready(function(){
 		text: false,
 		icons: {
 			primary: "draw-icon-img"
-		},
-		disabled: true
-	});
+		}
+	}).click(function(){$.whiteboard.setTool("image");$('#image-dialog').dialog("open");});
 	$( "#undo" ).button({
 		text: false,
 		icons: {
@@ -636,11 +724,11 @@ $(document).ready(function(){
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addCanvasLayer();});
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addSVGLayer();});
 //replace "fakerooms.json" with rooms endpoint
-	// $.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
-	$.getJSON( "fakerooms.json", function( data ) {
-		var rooms=data.rooms;
-		for(var room in rooms)$("<option>"+rooms[room].roomName+"</option>").appendTo("#room-select");
-	});
+	$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
+	// $.getJSON( "fakerooms.json", function( data ) {
+		// var rooms=data.rooms;
+		// for(var room in rooms)$("<option>"+rooms[room].roomName+"</option>").appendTo("#room-select");
+	// });
 	$( "#signin" ).dialog({
 		width: 235,
 		closeOnEscape: false,
@@ -653,13 +741,13 @@ $(document).ready(function(){
 				if(room!==""&&user!==""){
 					userName=$('#input-usr').val();
 //replace "fakesignin.txt" with signin endpoint
-					// $.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
-						// $.whiteboard.socket().emit('room', user, room);
-						// $( this ).dialog( "close" );
-					// });
-					$.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
-					$.whiteboard.socket().emit('room', user, room);
-					$( this ).dialog( "close" );
+					$.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
+						$.whiteboard.socket().emit('room', user, room);
+						$( this ).dialog( "close" );
+					});
+					// $.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
+					// $.whiteboard.socket().emit('room', user, room);
+					// $( this ).dialog( "close" );
 				}else if(room==="")alert("Room name cannot be blank");
 				else alert("User name cannot be blank");
 			}
@@ -684,6 +772,7 @@ $.whiteboard.socket().on("draw",function(drawData){
 			case "line":$.whiteboard.drawCanvasLine(data[1],data[3],data[4],data[5],data[6],data[7],data[8]); break;
 			case "rect":$.whiteboard.drawRect(data[1],data[3],data[4],data[5],data[6],data[7],data[8],data[9]); break;
 			case "circle":$.whiteboard.drawCircle(data[1],data[3],data[4],data[5],data[6],data[7],data[8]); break;
+			case "image":$.whiteboard.drawImage(data[1],data[3],data[4],data[5],data[6],data[7]); break;
 			case "erase":$.whiteboard.eraseCanvas(data[1],data[3],data[4],data[5]); break;
 		}
 	}

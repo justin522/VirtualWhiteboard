@@ -14,15 +14,15 @@ function svg(element, attributes, action){
 			case "update-attributes":
 				el=element;
 				for(var attr in attributes){
-					if(attr.substr(0,5)==="xlink")alert("sfasf");
-					el.setAttribute(attr,attributes[attr]);
+					if(attr.substr(0,5)==="xlink")el.setAttributeNS("http://www.w3.org/1999/xlink",attr,attributes[attr]);
+					else el.setAttribute(attr,attributes[attr]);
 				}
 				break;
 			default:
 				el=document.createElementNS("http://www.w3.org/2000/svg", element);
 				for(var attr in attributes){
-					if(attr.substr(0,5)==="xlink")alert("sfasf");
-					el.setAttribute(attr,attributes[attr]);
+					if(attr.substr(0,5)==="xlink")el.setAttributeNS("http://www.w3.org/1999/xlink",attr,attributes[attr]);
+					else el.setAttribute(attr,attributes[attr]);
 				}
 		}
 		return el;

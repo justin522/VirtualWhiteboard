@@ -114,11 +114,14 @@
 				color:blue;
 				font-style: italic;
 			}
-			#signin input,#signin select,#link-dialog input{
+			#signin input,#signin select,#link-dialog input,#image-dialog input{
 				color:black;
 			}
 			.ui-dialog-titlebar-close {
 				visibility: hidden;
+			}
+			.tmp {
+				display: none;
 			}
 		</style>
 		<script src="/socket.io/socket.io.js"></script>
@@ -207,6 +210,9 @@
 		 <div id="link-dialog" title="Input link data.">
 				Description: <input id="link-desc" type="text" /><br />
 				URL: http://&thinsp;<input id='link-url' /><br />
+		 </div>
+		 <div id="image-dialog" title="Input image url.">
+				URL: http:// <input id='img-url' /><br />
 		 </div>
 	</body>
 </html>
