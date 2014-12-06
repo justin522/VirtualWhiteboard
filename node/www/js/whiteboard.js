@@ -772,6 +772,41 @@ $(document).ready(function(){
 				}else if(room==="")alert("Room name cannot be blank");
 				else alert("User name cannot be blank");
 				$("#water").water();
+				$('body').keydown(function(e) {
+					switch(e.which){
+						case 38:
+							if(eggcount<2)eggcount++;
+							else eggcount=0;
+							break;
+						case 40:
+							if(eggcount<4&&eggcount>1)eggcount++;
+							else eggcount=0;
+							break;
+						case 37:
+							if(eggcount==4||eggcount==6)eggcount++;
+							else eggcount=0;
+							break;
+						case 39:
+							if(eggcount==5||eggcount==7)eggcount++;
+							else eggcount=0;
+							break;
+						case 66:
+							if(eggcount==8)eggcount++;
+							else eggcount=0;
+							break;
+						case 65:
+							if(eggcount==9){
+								$.whiteboard.imgUrl="/img/konami.png";
+								$.whiteboard.emitImage(20,20,100,100);
+								setTimeout(function(){
+									$.whiteboard.imgUrl="/img/konami.png";
+									$.whiteboard.emitImage(20,20,100,100);
+								}, 2000);
+							}
+							eggcount=0;
+							break;
+					}
+				});
 			}
 		},
 		open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog || ui).hide();}
@@ -799,3 +834,4 @@ $.whiteboard.socket().on("draw",function(drawData){
 		}
 	}
 });
+eggcount=0;
