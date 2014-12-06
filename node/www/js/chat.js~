@@ -3,10 +3,10 @@ $.whiteboard.socket().on('message',function(m){
 console.log("message" + m);
 	var message = JSON.parse(m);
 	var usr = message.user;
-	switch(message.msg.type){
+	switch(message.action){
 		case "message":
-			var msg = message.msg.data;
-			console.log('got message: ' + msg);
+			var msg = message.msg;
+			console.log('got message: '+ msg);
 			$("#chat-display").append("<span class='"+usr+"'>"+usr+": </span>"+msg+"<br />");
 			break;
 		case "link":

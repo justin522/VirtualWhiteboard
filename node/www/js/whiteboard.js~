@@ -517,7 +517,8 @@
 $(document).ready(function(){
 	$("#whiteboard").workspace();
 	$("#post-chat").click(function(){
-		var m = {type:'message',data:$('#chat-input').val()};
+		var m = $('#chat-input').val();
+		//var m = {type:'message',data:$('#chat-input').val()};
 		$.whiteboard.socket().emit('msg',$.whiteboard.userName, m);
 		$('#chat-input').val('');
 	});
