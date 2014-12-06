@@ -5,10 +5,11 @@
 		roomName:"",
 		layers:[],
 		activeLayer:null,
+		indicators:[],
 		host:function(){return window.location.host.split(':')[0];},
 		socket:function(){return io.connect('http://'+this.host());},
 		userName:"",
-		fillColor: null,
+		fillColor: "none",
 		strokeColor:"black",
 		strokeWidth: 1,
 		layercount: 0
@@ -35,7 +36,7 @@
 		al.off();
 		switch(tool){
 			case "realtime":
-				$($.whiteboard.workspace).css('cursor','url(img/marker.png), auto');
+				$(wb.workspace).css('cursor','url(img/marker.png), auto');
 				al.click(function(e){
 					var point=wb.getMousePosition(e);
 					wb.emitPoint(point.x,point.y);
@@ -44,17 +45,28 @@
 				});
 				al.mouseup(function(e){
 					draw=false;
+				}).mouseover(function(e){
+					$(wb.indicators["point"]).appendTo(wb.layers[0]);
+					svg(wb.indicators["point"],{r:wb.strokeWidth/2,fill:wb.strokeColor},"update-attributes");
 				}).mousemove(function(e){
 					var point=wb.getMousePosition(e);
 					prevX = currX;
 					prevY = currY;
 					currX = point.x;
 					currY = point.y;
+					var change={};
+					if(point.x!==prevX){
+						change.cx=point.x;
+					}
+					if(point.y!==prevY){
+						change.cy=point.y;
+					}
 					if(draw){
-						if(Math.sqrt(Math.pow((currX-prevX),2)+Math.pow((currY-prevY),2))>$.whiteboard.strokeWidth/2){
+						if(Math.sqrt(Math.pow((currX-prevX),2)+Math.pow((currY-prevY),2))>wb.strokeWidth/2){
 							wb.emitLine(prevX,prevY,currX,currY);
 						}else wb.emitPoint(currX,currY);	
 					}
+					svg(wb.indicators["point"],change,"update-attributes");
 				});
 				break;
 			case "erase_c":
@@ -67,75 +79,122 @@
 				});
 				al.mouseup(function(e){
 					draw=false;
+				}).mouseover(function(e){
+					$(wb.indicators["erase"]).appendTo(wb.layers[0]);
+					svg(wb.indicators["erase"],{r:wb.strokeWidth/2},"update-attributes");
 				}).mousemove(function(e){
 					var point=wb.getMousePosition(e);
-					prevX = currX;
-					prevY = currY;
-					currX = point.x;
-					currY = point.y;
-					if(draw){
-						wb.emitEraseCanvas(currX,currY);	
+					var change={};
+					var prevX,prevY;
+					if(point.x!==prevX){
+						change.cx=prevX=point.x;
 					}
+					if(point.y!==prevY){
+						change.cy=prevY=point.y;
+					}
+					if(draw){
+						wb.emitEraseCanvas(point.x,point.y);	
+					}
+					svg(wb.indicators["erase"],change,"update-attributes");
 				});
 				
 				break;
 			case "line":
-				$($.whiteboard.workspace).css('cursor','url(img/line-marker.png), auto');
+				$(wb.workspace).css('cursor','url(img/line-marker.png), auto');
 				var x=null;
 				var y=null;
+				var preview=false;
 				al.mousedown(function(e){
 					var point=wb.getMousePosition(e);
 					x=point.x;
 					y=point.y;
+					$(wb.indicators["line"]).appendTo(wb.layers[0]);
+					svg(wb.indicators["line"],{x1:x,y1:y,x2:x,y2:y,stroke:wb.strokeColor,"stroke-width":wb.strokeWidth},"update-attributes");
+					preview=true;
 				});
 				al.mouseup(function(e){
 					if(null!==x){
 						var point=wb.getMousePosition(e);
-						$.whiteboard.emitLine(x,y,point.x,point.y);
+						wb.emitLine(x,y,point.x,point.y);
 						x=null;
 						y=null;
 					}
+					svg(wb.indicators["line"],{},"remove");
+					perview=false;
 				}).mousemove(function(e){
+					var point=wb.getMousePosition(e);
+					var change={};
+					if(preview){
+						svg(wb.indicators["line"],{x2:point.x,y2:point.y},"update-attributes");
+					}
 				});
 				break;
 			case "polyline":
-				$($.whiteboard.workspace).css('cursor','url(img/polyline-marker.png), auto');
+				$(wb.workspace).css('cursor','url(img/polyline-marker.png), auto');
 				var x=null;
 				var y=null;
+				var preview=false;
 				al.click(function(e){
 					var point=wb.getMousePosition(e);
 					if(null!==x){
-						$.whiteboard.emitLine(x,y,point.x,point.y);
+						wb.emitLine(x,y,point.x,point.y);
 					}
 					x=point.x;
 					y=point.y;
+					$(wb.indicators["line"]).appendTo(wb.layers[0]);
+					svg(wb.indicators["line"],{x1:x,y1:y,x2:x,y2:y,stroke:wb.strokeColor,"stroke-width":wb.strokeWidth},"update-attributes");
+					preview=true;
 				}).dblclick(function(e){
 					x=null;
 					y=null;
+					$(wb.indicators["line"]).appendTo(wb.layers[0]);
+					svg(wb.indicators["line"],{x1:x,y1:y,x2:x,y2:y,stroke:wb.strokeColor,"stroke-width":wb.strokeWidth},"update-attributes");
+					preview=false;
 				}).mousemove(function(e){
+					var point=wb.getMousePosition(e);
+					var change={};
+					if(preview){
+						svg(wb.indicators["line"],{x2:point.x,y2:point.y},"update-attributes");
+					}
 				});
 				break;
 			case "rect":
-				$($.whiteboard.workspace).css('cursor','url(img/rectangle-marker.png), auto');
+				$(wb.workspace).css('cursor','url(img/rectangle-marker.png), auto');
 				var x=null;
 				var y=null;
+				var preview=false;
 				al.mousedown(function(e){
 					var point=wb.getMousePosition(e);
 					x=point.x;
 					y=point.y;
+					$(wb.indicators["rect"]).appendTo(wb.layers[0]);
+					svg(wb.indicators["rect"],{x:x,y:y,width:0,height:0,fill:wb.fillColor,stroke:wb.strokeColor,"stroke-width":wb.strokeWidth},"update-attributes");
+					preview=true;
 				});
 				al.mouseup(function(e){
 					if(null!==x){
 						var point=wb.getMousePosition(e);
-						$.whiteboard.emitRect(x,y,point.x,point.y);
+						var w=point.x-x;
+						var h=point.y-y;
+						wb.emitRect(x,y,w,h);
 						x=null;
 						y=null;
+						svg(wb.indicators["rect"],{},"remove");
+						perview=false;
 					}
 				}).mousemove(function(e){
+					if(preview){
+						var point=wb.getMousePosition(e);
+						var w=Math.abs(point.x-x);
+						var h=Math.abs(point.y-y);
+						var xloc=Math.min(x,point.x);
+						var yloc=Math.min(y,point.y);
+						svg(wb.indicators["rect"],{x:xloc,y:yloc,width:w,height:h},"update-attributes");
+					}
 				});
 				break;
 			case "circle":
-				$($.whiteboard.workspace).css('cursor','url(img/circle-marker.png), auto');
+				$(wb.workspace).css('cursor','url(img/circle-marker.png), auto');
 				var cx=null;
 				var cy=null;
 				al.mousedown(function(e){
@@ -147,7 +206,7 @@
 					if(null!==x){
 						var point=wb.getMousePosition(e);
 						r=Math.sqrt(Math.pow(point.x-cx,2)+Math.pow(point.y-cy,2));
-						$.whiteboard.emitCircle(cx,cy,r);
+						wb.emitCircle(cx,cy,r);
 						cx=null;
 						cy=null;
 					}
@@ -157,7 +216,7 @@
 		}
 	},
 	$.whiteboard.emitPoint=function(x,y) {
-		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|point|'+x+'|'+y+'|'+$.whiteboard.strokeColor+'|'+$.whiteboard.strokeWidth});
+		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+wb.activeLayer.attr('id')+'|point|'+x+'|'+y+'|'+$.whiteboard.strokeColor+'|'+$.whiteboard.strokeWidth});
 		$.whiteboard.socket().emit('drawing',data);
 	},
 	$.whiteboard.drawCanvasPoint=function(layer,x,y,strokeColor,strokeWidth){
@@ -201,11 +260,11 @@
 		ctx=canvas.getContext("2d");
 		ctx.beginPath();
 		ctx.lineWidth = strokeWidth;
-		if("null"!==fillColor){
+		if("none"!==fillColor){
 	    	ctx.fillStyle = fillColor;
 			ctx.fillRect(x, y, x1, y1);
 		}
-		if("null"!==strokeColor){
+		if("none"!==strokeColor){
 			ctx.strokeStyle = strokeColor;
 			ctx.rect(x, y, x1, y1);
 			ctx.stroke();
@@ -222,11 +281,11 @@
 		ctx.beginPath();
 		ctx.lineWidth = strokeWidth;
 		ctx.arc(x, y, r, 0, 2 * Math.PI, false);
-		if("null"!==fillColor){
+		if("none"!==fillColor){
 	    	ctx.fillStyle = fillColor;
 			ctx.fill();
 		}
-		if("null"!==strokeColor){
+		if("none"!==strokeColor){
 			ctx.strokeStyle = strokeColor;
 			ctx.stroke();
 		}
@@ -294,16 +353,70 @@
 			return newLayer;
 		},
 		_addActionLayer: function(type) {
+			wb=$.whiteboard;
 			var actionlayer=this.addSVGLayer();
 			var defs=svg("defs",{cx:"100",cy:"100",r:"50",fill:"red"});
 			var grad=svg("radialGradient",{id:"eraser-grad"});
-			$(grad).append(svg("stop",{offset:"0%", "stop-opacity":".5", "stop-color":"black"}),svg("stop",{offset:"100%", "stop-opacity":"0"}));
+			$(grad).append(svg("stop",{offset:"0%", "stop-opacity":".5", "stop-color":"lightgray"}),svg("stop",{offset:"100%", "stop-opacity":"0"}));
 			$(defs).append(grad);
-			var circ=svg("circle",{cx:"100",cy:"100",r:"50",fill:"url(#eraser-grad)"});
-			actionlayer.append(defs,circ);
-			svg(circ,{},"remove");
-			//actionlayer.append(svg("circle",{cx:"100",cy:"100",r:"50",fill:"url(#eraser-gradient)"}));
-			$.whiteboard.setTool("realtime");
+			var indicator;
+			indicator=wb.indicators["erase"]=svg("circle",{class:"strokeWidth",cx:"100",cy:"100",r:"1",fill:"url(#eraser-grad)"});
+			actionlayer.append(defs,indicator);
+			svg(indicator,{},"remove");
+			$(indicator).on("resize",function(e,d){
+				svg(this,{r:d/3},"update-attributes");
+			}).mousemove(function(e){
+				var point=wb.getMousePosition(e);
+				var change={};
+				var prevX,prevY;
+				if(point.x!==prevX){
+					change.cx=prevX=point.x;
+				}
+				if(point.y!==prevY){
+					change.cy=prevY=point.y;
+				}
+				svg(this,change,"update-attributes");
+			});
+
+			indicator=wb.indicators["point"]=svg("circle",{class:"strokeWidth strokeColor",cx:"100",cy:"100",r:"1",fill:wb.strokeColor,opacity:".5"});
+			actionlayer.append(defs,indicator);
+			svg(indicator,{},"remove");
+			$(indicator).on("resize",function(e,d){
+				svg(this,{r:d/3},"update-attributes");
+			}).on("changeStrokeColor",function(e,color){
+				svg(this,{fill:color},"update-attributes");
+			}).mousemove(function(e){
+				var point=wb.getMousePosition(e);
+				var change={};
+				var prevX,prevY;
+				if(point.x!==prevX){
+					change.cx=prevX=point.x;
+				}
+				if(point.y!==prevY){
+					change.cy=prevY=point.y;
+				}
+				svg(this,change,"update-attributes");
+			});
+			
+			indicator=wb.indicators["line"]=svg("line",{class:"strokeWidth strokeColor",x1:"0",y1:"0",x2:"0",y2:"0",stroke:wb.strokeColor,"stroke-width":"1"});
+			actionlayer.append(defs,indicator);
+			svg(indicator,{},"remove");
+			$(indicator).on("resize",function(e,d){
+				svg(this,{r:d/3},"update-attributes");
+			}).on("changeStrokeColor",function(e,color){
+				svg(this,{fill:color},"update-attributes");
+			});
+			wb.setTool("realtime");
+			
+			indicator=wb.indicators["rect"]=svg("rect",{class:"strokeWidth strokeColor strokeFill",x:"0",y:"0",width:"0",height:"0",fill:wb.fillColor,stroke:wb.strokeColor,"stroke-width":"1"});
+			actionlayer.append(defs,indicator);
+			svg(indicator,{},"remove");
+			$(indicator).on("resize",function(e,d){
+				svg(this,{r:d/3},"update-attributes");
+			}).on("changeStrokeColor",function(e,color){
+				svg(this,{fill:color},"update-attributes");
+			});
+			wb.setTool("realtime");
 			return actionlayer;
 		},
 	 
@@ -344,6 +457,7 @@ $(document).ready(function(){
 					$.whiteboard.socket().emit('msg',$('#input-usr').val(), m);
 					$('#link-url,#link-desct').val('');
 					$( this ).dialog( "close" );
+					
 				}
 			}
 		]
@@ -366,14 +480,12 @@ $(document).ready(function(){
 		appendTo:"#color-tools",
 		clickoutFiresChange: true,
 		change: function(color) {
-			if(!color){
-				$.whiteboard.fillColor = null;
-				$("#sample").attr("fill","none");
-			}
-			else{
-				$.whiteboard.fillColor = color.toRgbString();
-				$("#sample").attr("fill",color.toRgbString());
-			}
+			var c;
+			if(color)c=color.toRgbString();
+			else c="none";
+			$.whiteboard.fillColor = c;
+			$("#sample").attr("fill",c);
+			$(".fillColor").trigger("changeFillColor",[c]);
 		}
 	});
 	$("#linecolor").spectrum({
@@ -384,14 +496,12 @@ $(document).ready(function(){
 		appendTo:"#color-tools",
 		clickoutFiresChange: true,
 		change: function(color) {
-			if(!color){
-				$.whiteboard.strokeColor = null;
-				$("#sample").attr("stroke","none");
-			}
-			else{
-				$.whiteboard.strokeColor = color.toRgbString();
-				$("#sample").attr("stroke",color.toRgbString());
-			}
+			var c;
+			if(color)c=color.toRgbString();
+			else c="none";
+			$.whiteboard.strokeColor = c;
+			$("#sample").attr("stroke",c);
+			$(".strokeColor").trigger("changeStrokeColor",[c]);
 		}
 	});
 	$('.number').keypress(function (event) {
@@ -404,12 +514,20 @@ $(document).ready(function(){
 			event.preventDefault();
 		}
 	});
-	$("#linesize").change(function(){
-		$.whiteboard.strokeWidth = $(this).val();
-		$("#sample").attr("stroke-width",$(this).val());
+	$("#linesize").spinner({
+		min: 1,
+		stop: function() {
+			$(".strokeWidth").trigger("resize",[$(this).val()]);
+			$.whiteboard.strokeWidth = $(this).val();
+			$("#sample").attr("stroke-width",$(this).val());
+			
+		}
 	});
 	$("#tabs").tabs();
 	$("#drawing-tools>input").click(function(){
+		for(var i in $.whiteboard.indicators){
+			svg($.whiteboard.indicators[i],{},"remove");
+		}
 		if(!$(this).is(":checked")){
 			$(this).prop('checked',true).button( "refresh" );
 		}else $(this).siblings(":checked").removeAttr('checked').button( "refresh" );
@@ -518,10 +636,8 @@ $(document).ready(function(){
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addCanvasLayer();});
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addSVGLayer();});
 //replace "fakerooms.json" with rooms endpoint
-	$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
-	// $.getJSON( "fakerooms.json", function( data ) {
-		//var rooms=data.split(",");
-		//for(var room in rooms)$("<option>"+rooms[room]+"</option>").appendTo("#room-select");
+	// $.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
+	$.getJSON( "fakerooms.json", function( data ) {
 		var rooms=data.rooms;
 		for(var room in rooms)$("<option>"+rooms[room].roomName+"</option>").appendTo("#room-select");
 	});
@@ -537,13 +653,13 @@ $(document).ready(function(){
 				if(room!==""&&user!==""){
 					userName=$('#input-usr').val();
 //replace "fakesignin.txt" with signin endpoint
-					$.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
-						$.whiteboard.socket().emit('room', user, room);
-						$( this ).dialog( "close" );
-					});
-					// $.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
-					// $.whiteboard.socket().emit('room', user, room);
-					// $( this ).dialog( "close" );
+					// $.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
+						// $.whiteboard.socket().emit('room', user, room);
+						// $( this ).dialog( "close" );
+					// });
+					$.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
+					$.whiteboard.socket().emit('room', user, room);
+					$( this ).dialog( "close" );
 				}else if(room==="")alert("Room name cannot be blank");
 				else alert("User name cannot be blank");
 			}

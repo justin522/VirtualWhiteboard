@@ -3,8 +3,7 @@ function svg(element, attributes, action){
 		switch(action){
 			case "remove":
 				el=element;
-				console.log(el.parentNode);
-				//el.parent.removeChild(el);
+				if(el.parentElement)el.parentElement.removeChild(el);
 				break;
 			case "clear-attributes":
 				el=element;
