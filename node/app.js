@@ -6,7 +6,8 @@ var express = require('express')
     , redis = require('socket.io-redis')	
     , session = require('express-session')
     , cookieParser = require('cookie-parser')
-    , Client = require('node-rest-client').Client;
+    , Client = require('node-rest-client').Client
+    , cors = require('cors');
 
 client = new Client();
 var drawinginstructions = {};
@@ -25,7 +26,7 @@ log.users = [];
 log.messages = [];
 log.drawings = [];
 log.links = [];
-
+app.use(cors());
 app.use(express.static(__dirname + '/www')); 
 
 
