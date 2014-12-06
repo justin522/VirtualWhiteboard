@@ -6,20 +6,42 @@
 		_create: function() {
 			var QUALITY=this.options.QUALITY;
 			var WIDTH = Math.floor(
-				$(this.element).width() / QUALITY
+				$(chat).width() / QUALITY
 			),
-			HEIGHT = Math.floor($(this.element).height() / QUALITY),
+			HEIGHT = Math.floor($(chat).height() / QUALITY),
 			SIZE = WIDTH * HEIGHT;
-			var context, image, data, buffer1, buffer2, tempbuffer, isUserInteracting, pointers;
+			var context, image, data, buffer1, buffer2, tempbuffer, isUserInteracting;
 			container=this.element;
 			canvas=$("<canvas />");
-			$(container).prepend(canvas);
-			canvas.css("position","absolute");
+			$(container).append(canvas).addClass("ui-corner-all");
+			canvas.addClass("ui-corner-all");
+			$(chat).css("background","none").mousedown(function(event){
+				//event.preventDefault();
+				//$(chat).children().trigger(event);
+				isUserInteracting = true;
+				pointers = [[(event.clientX-$(container).offset().left)/ QUALITY, (event.clientY-$(container).offset().top)/ QUALITY]];
+				$.whiteboard.socket().emit('water', (event.clientX-$(container).offset().left)/ QUALITY, (event.clientY-$(container).offset().top)/ QUALITY);
+			}).mousemove(function(event){
+				isUserInteracting = true;
+				pointers = [[(event.clientX-$(container).offset().left)/ QUALITY, (event.clientY-$(container).offset().top) / QUALITY]];
+				$.whiteboard.socket().emit('water', (event.clientX-$(container).offset().left)/ QUALITY, (event.clientY-$(container).offset().top)/ QUALITY);
+			}).mouseup(function(event){
+				isUserInteracting = false;
+			}).mouseout(function(event){
+				isUserInteracting = false;
+			});
+			$(document).keyup(function(e){
+				buffer1[ Math.floor(Math.random() * WIDTH) + (Math.floor(Math.random() * HEIGHT) * WIDTH)] = 255;
+			});
+			$("#chat-display").css({background:"none",color:"white"});
+			$("#chat-input").css({color:"black"});
+			//canvas.css("position","absolute");
 			context=canvas[0].getContext("2d");
+			$(this.element).offset($(chat).offset());
 			canvas[0].width = WIDTH;
 			canvas[0].height = HEIGHT;
-			canvas[0].style.width = $(container).width() + "px";
-			canvas[0].style.height = $(container).height() + "px";
+			canvas[0].style.width = $(chat).width() + "px";
+			canvas[0].style.height = $(chat).height() + "px";
 			context.fillStyle = "rgb(0, 0, 0)";
 			context.fillRect (0, 0, WIDTH, HEIGHT);
 			image = context.getImageData(0, 0, WIDTH, HEIGHT);
@@ -30,6 +52,11 @@
 			if (isUserInteracting) {
 				for (var i = 0; i < pointers.length; i++) {
 					buffer1[ Math.floor(pointers[i][0]) + (Math.floor(pointers[i][1]) * WIDTH)] = 255;
+				}
+			}
+			if($.effects.socketpointers){
+				for (var i = 0; i < $.effects.socketpointers.length; i++) {
+					buffer1[ Math.floor($.effects.socketpointers[i][0]) + (Math.floor($.effects.socketpointers[i][1]) * WIDTH)] = 255;
 				}
 			}
 			var pixel;
@@ -45,28 +72,12 @@
 			tempbuffer = buffer1;
 			buffer1 = buffer2;
 			buffer2 = tempbuffer;
-			
-			console.log(context);
 			context.putImageData(image, 0, 0);
 			}, 1000 / 60);
 			for (var i = 0; i < SIZE; i ++) {
 				buffer1[i] = 0;
 				buffer2[i] = i > WIDTH && i < SIZE - WIDTH && Math.random() > 0.995 ? 255 : 0;
 			}
-			$(canvas).mousedown(function(event){
-				event.preventDefault();
-				isUserInteracting = true;
-				pointers = [[event.clientX / QUALITY, event.clientY / QUALITY]];
-			}).mousemove(function(event){
-				pointers = [[event.clientX / QUALITY, event.clientY / QUALITY]];
-			}).mouseup(function(event){
-				isUserInteracting = false;
-			}).mouseout(function(event){
-				isUserInteracting = false;
-			});
-			$(document).keyup(function(e){
-				buffer1[ Math.floor(Math.random() * WIDTH) + (Math.floor(Math.random() * HEIGHT) * WIDTH)] = 255;
-			});
 		},
 		_setOption: function( key, value ) {
 			if ( key === "value" ) {
@@ -80,4 +91,7 @@
 		}
 	});
 })( jQuery );
-
+$.whiteboard.socket().on("water",function(user,x,y){
+	if(user!==$.whiteboard.userName)console.log(user);
+	if(user!==$.whiteboard.userName)$.effects.socketpointers = [[x, y]];
+});

@@ -113,6 +113,7 @@ io.sockets.on('connection',function(socket){
 		drawinginstructions[socket.room].push(reply);
 		io.to(socket.room).emit('draw',reply);
 	});
+	socket.on('water',function(x,y){io.to(socket.room).emit('water',socket.username,x,y);});
 });
 
 server.listen(3000, function(){

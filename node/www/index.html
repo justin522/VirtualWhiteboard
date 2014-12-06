@@ -45,6 +45,7 @@
 .draw-icon-img {background-position: -160px -32px;}
 .draw-icon-undo {background-position: -192px -32px;}
 .draw-icon-realtime {background-position: -224px -32px;}
+.draw-icon-polygon{background-position: -0px -64px;}
 		</style>
 		<style>
 			body{
@@ -123,6 +124,9 @@
 			.tmp {
 				display: none;
 			}
+			#chat-display{
+				cursor: none;
+			}
 		</style>
 		<script src="/socket.io/socket.io.js"></script>
 		<script src='lib/jquery.js'></script>
@@ -131,14 +135,12 @@
 		<script src='js/whiteboard.js'></script>
 		<script src='js/chat.js'></script>
 		<script src='js/svgTools.js'></script>
-		<!--<script src='js/canvasTools.js'></script>-->
+		<script src='js/water.js'></script>
 	</head>
 
 	<body>
 		<div>
-			<div id="whiteboard">
-				<!--<canvas width="700px" height="500px" class="layer" id="canvas0"></canvas>-->
-			</div>
+			<div id="whiteboard"></div>
 			<div id="tabs">
 				<ul>
 					<li><a href="#tools">Tools</a></li>
@@ -149,19 +151,20 @@
 				<div id="tools">
 					<div id="drawing-tools">
 						<input type="checkbox" checked="checked" id="realtime" /><label for="realtime">Real Time</label></input><br/><br/>
+						<input type="checkbox" id="line"><label for="line">Line</label></input>	
 						<input type="checkbox" id="freehand" /><label for="freehand">Freehand</label></input>
-						<input type="checkbox" id="path"><label for="path">Path</label></input>
-						<input type="checkbox" id="polyline"><label for="polyline">Polyline</label></input>
-						<input type="checkbox" id="line"><label for="line">Line</label></input>
+						<input type="checkbox" id="rectangle"><label for="rectangle">Rectangle</label></input>
 						<input type="checkbox" id="circle"><label for="circle">Circle</label></input>
+						<input type="checkbox" id="image"><label for="image">Image</label></input><br/><br/>
+						<input type="checkbox" id="polyline"><label for="polyline">Polyline</label></input>
+						<input type="checkbox" id="path"><label for="path">Path</label></input>
+						<input type="checkbox" id="polygon"><label for="polygon">Polygon</label></input>
 						<input type="checkbox" id="oval"><label for="oval">Oval</label></input>
-						<input type="checkbox" id="rectangle"><label for="rectangle">Rectangle</input></label><br/><br/>
+						<input type="checkbox" id="text"><label for="text">Text</label></input><br/><br/>
 						<input type="checkbox" id="erase"><label for="erase">Erase</label></input>
 						<input type="checkbox" id="select"><label for="select">Select</label></input>
 						<input type="checkbox" id="move"><label for="move">Move</label></input>
 						<input type="checkbox" id="rotate"><label for="rotate">Rotate</label></input>
-						<input type="checkbox" id="text"><label for="text">Text</label></input>
-						<input type="checkbox" id="image"><label for="image">Image</label></input>
 						<input type="checkbox" id="undo"><label for="undo">Undo</label></input>
 					</div><br/>
 					<div id="color-tools">
@@ -187,6 +190,7 @@
 				<div id="users">
 				</div>
 			</div>
+			<div id="water"></div>
 			<div id="chat" class="ui-widget ui-widget-content ui-corner-all">
 				<div id="chat-display"></div>
 				<div id="chat-tools">
@@ -196,8 +200,6 @@
 				</div>
 			</div>
 		</div>
-		<!--Remove later-->
-		 <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;">
 		 <div id="signin" title="Select Room">
 				Room:
 				<select id="room-select">

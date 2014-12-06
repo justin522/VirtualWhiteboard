@@ -326,7 +326,7 @@
 		var img=$("<img />").addClass("tmp").attr("src",url).width(w).height(h).appendTo("body")[0];
 		canvas=$('#'+layer)[0];
 		ctx=canvas.getContext("2d");
-		ctx.drawImage(img,x,y);
+		ctx.drawImage(img,x,y,w,h);
 	},
 	$.whiteboard.emitCircle=function(x,y,r) {
 		var data = JSON.stringify({user:userName,data:$.whiteboard.mode+'|'+$.whiteboard.activeLayer.attr('id')+'|circle|'+x+'|'+y+'|'+r+'|'+$.whiteboard.fillColor+'|'+$.whiteboard.strokeColor+'|'+$.whiteboard.strokeWidth});
@@ -518,7 +518,7 @@ $(document).ready(function(){
 	$("#whiteboard").workspace();
 	$("#post-chat").click(function(){
 		var m = {type:'message',data:$('#chat-input').val()};
-		$.whiteboard.socket().emit('msg',$('#input-usr').val(), m);
+		$.whiteboard.socket().emit('msg',$.whiteboard.userName, m);
 		$('#chat-input').val('');
 	});
 	$('#link-dialog').dialog({
@@ -527,9 +527,11 @@ $(document).ready(function(){
 			{
 				text: "OK",
 				click: function() {
-					var m = {type:'link',url:$('#link-url').val(),desc:$('#link-desc').val()};
-					$.whiteboard.socket().emit('msg',$('#input-usr').val(), m);
-					$('#link-url,#link-desct').val('');
+					var url=$('#link-url').val();
+					if(url.indexOf("http")!==0)url="http://"+url;
+					var m = {type:'link',url:url,desc:$('#link-desc').val()};
+					$.whiteboard.socket().emit('msg',$.whiteboard.userName, m);
+					$('#link-url,#link-desc').val('');
 					$( this ).dialog( "close" );
 					
 				}
@@ -543,13 +545,23 @@ $(document).ready(function(){
 				text: "OK",
 				click: function() {
 					var url=$('#img-url').val();
-					if(url.indexOf("http")!==0)url=url+"http://";
+					if(url==="")url=window.location.host+"/img/noimage.png";
+					if(url.indexOf("http")!==0)url="http://"+url;
 					$.whiteboard.imgUrl=url;//.replace("Microsoft", "W3Schools");
 					$('#img-url').val('');
 					$( this ).dialog( "close" );
 				}
 			}
 		]
+	}).keypress(function(e) {
+		if ( e.which == 13 ) {
+			var url=$('#img-url').val();
+			if(url==="")url=window.location.host+"/img/noimage.png";
+			if(url.indexOf("http")!==0)url="http://"+url;
+			$.whiteboard.imgUrl=url;//.replace("Microsoft", "W3Schools");
+			$('#img-url').val('');
+			$( this ).dialog( "close" );
+		}
 	}).dialog("close");
 	$('#link-button').click(function(){$('#link-dialog').dialog("open");});
 	$('#chat-input').keypress(function(e) {
@@ -557,10 +569,8 @@ $(document).ready(function(){
 			$("#post-chat").click();
 		}
 	});
-	$('#signin').keypress(function(e) {
-		if ( e.which == 13 ) {
-			$("#post-chat").click();
-		}
+	$("#chat-display").mousedown(function(e){
+		e.preventDefault();
 	});
 	$("#fillcolor").spectrum({
 		showAlpha: true,
@@ -612,7 +622,7 @@ $(document).ready(function(){
 			
 		}
 	});
-	$("#tabs").tabs();
+	$("#tabs").tabs().tabs( "disable", 1 );
 	$("#drawing-tools>input").click(function(){
 		for(var i in $.whiteboard.indicators){
 			svg($.whiteboard.indicators[i],{},"remove");
@@ -713,7 +723,10 @@ $(document).ready(function(){
 		icons: {
 			primary: "draw-icon-img"
 		}
-	}).click(function(){$.whiteboard.setTool("image");$('#image-dialog').dialog("open");});
+	}).click(function(){
+		$.whiteboard.setTool("image");
+		$('#image-dialog').dialog("open");
+	});
 	$( "#undo" ).button({
 		text: false,
 		icons: {
@@ -721,14 +734,21 @@ $(document).ready(function(){
 		},
 		disabled: true
 	});
+	$( "#polygon" ).button({
+		text: false,
+		icons: {
+			primary: "draw-icon-polygon"
+		},
+		disabled: true
+	});
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addCanvasLayer();});
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addSVGLayer();});
-//replace "fakerooms.json" with rooms endpoint
+//Connection: the next four lines handle the cet request to list existing rooms.
 	$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
 	// $.getJSON( "fakerooms.json", function( data ) {
-		// var rooms=data.rooms;
-		// for(var room in rooms)$("<option>"+rooms[room].roomName+"</option>").appendTo("#room-select");
-	// });
+		var rooms=data.rooms;
+		for(var room in rooms)$("<option>"+rooms[room].roomName+"</option>").appendTo("#room-select");
+	});
 	$( "#signin" ).dialog({
 		width: 235,
 		closeOnEscape: false,
@@ -740,16 +760,18 @@ $(document).ready(function(){
 				var room=$('#room-input').val();
 				if(room!==""&&user!==""){
 					userName=$('#input-usr').val();
-//replace "fakesignin.txt" with signin endpoint
+//Connection: the next four lines handle the post request to join the room
 					$.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
 						$.whiteboard.socket().emit('room', user, room);
 						$( this ).dialog( "close" );
 					});
 					// $.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
 					// $.whiteboard.socket().emit('room', user, room);
+					// $.whiteboard.userName=user;
 					// $( this ).dialog( "close" );
 				}else if(room==="")alert("Room name cannot be blank");
 				else alert("User name cannot be blank");
+				$("#water").water();
 			}
 		},
 		open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog || ui).hide();}
