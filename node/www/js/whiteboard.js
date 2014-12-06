@@ -761,10 +761,10 @@ $(document).ready(function(){
 				if(room!==""&&user!==""){
 					userName=$('#input-usr').val();
 //Connection: the next four lines handle the post request to join the room
-					$.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
+					//$.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
 						$.whiteboard.socket().emit('room', user, room);
-						$( this ).dialog( "close" );
-					});
+					//	$( this ).dialog( "close" );
+					//});
 					// $.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
 					// $.whiteboard.socket().emit('room', user, room);
 					// $.whiteboard.userName=user;
