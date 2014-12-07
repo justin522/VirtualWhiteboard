@@ -68,7 +68,9 @@ public class UserDao {
         } catch (NoResultException ex) {
             return null;
         } finally {
-            session.close();
+            if (session != null) {
+                session.close();
+            }
         }
     }
 
@@ -81,12 +83,14 @@ public class UserDao {
     public User getUserById(Long userid) {
         try {
             return (User) session.createQuery("SELECT u FROM User u WHERE u.id = :userid")
-                    .setParameter("userid", userid)
+                    .setLong("userid", userid)
                     .uniqueResult();
         } catch (NoResultException ex) {
             return null;
         } finally {
-            session.close();
+            if (session != null) {
+                session.close();
+            }
         }
     }
 
@@ -103,7 +107,9 @@ public class UserDao {
         } catch (NoResultException ex) {
             return new ArrayList<>();
         } finally {
-            session.close();
+            if (session != null) {
+                session.close();
+            }
         }
     }
 }

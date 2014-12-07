@@ -19,21 +19,31 @@ public class ChatDao {
     }
 
     public void saveChatMessage(ChatMessage message) {
-        session.getTransaction().begin();
-        session.persist(message);
-        session.getTransaction().commit();
+        try {
+            session.getTransaction().begin();
+            session.persist(message);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     public List<ChatMessage> getMessagesByRoom(Long roomid) {
         try {
-            return (List<ChatMessage>) session.createQuery("SELECT cm from ChatMessage cm WHERE cm.roomid = :roomid ORDER BY cm.created")
-                    .setParameter("roomid", roomid)
+            return (List<ChatMessage>) session.createQuery("SELECT cm from ChatMessage cm WHERE cm.roomid = :roomid ORDER BY cm.id")
+                    .setLong("roomid", roomid)
                     .list();
         } catch (NoResultException e) {
             return new ArrayList<>();
         } finally {
-            session.close();
+            if (session != null) {
+                session.close();
+            }
         }
     }
 }

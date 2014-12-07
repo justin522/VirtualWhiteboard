@@ -63,7 +63,9 @@ public class RoomDao {
 		} catch (NoResultException ex) {
 			return null;
 		} finally {
-			session.close();
+			if (session != null) {
+				session.close();
+			}
 		}
 	}
 
@@ -77,12 +79,14 @@ public class RoomDao {
 	public Room getRoomById(Long roomid) {
 		try {
 			return (Room) session.createQuery("SELECT r FROM Room r WHERE r.id = :roomid")
-					.setParameter("roomid", roomid)
+					.setLong("roomid", roomid)
 					.uniqueResult();
 		} catch (NoResultException ex) {
 			return null;
 		} finally {
-			session.close();
+			if (session != null) {
+				session.close();
+			}
 		}
 	}
 
@@ -99,7 +103,9 @@ public class RoomDao {
 		} catch (NoResultException ex) {
 			return new ArrayList<>();
 		} finally {
-			session.close();
+			if (session != null) {
+				session.close();
+			}
 		}
 	}
 }

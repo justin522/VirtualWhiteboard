@@ -19,21 +19,31 @@ public class WhiteboardDao {
     }
 
     public void saveWhiteboardEdit(WhiteboardEdit whiteboardEdit) {
-        session.getTransaction().begin();
-        session.persist(whiteboardEdit);
-        session.getTransaction().commit();
+        try {
+            session.getTransaction().begin();
+            session.persist(whiteboardEdit);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     public List<WhiteboardEdit> getEditsByRoom(Long roomid) {
         try {
-            return (List<WhiteboardEdit>) session.createQuery("SELECT we FROM WhiteboardEdit we WHERE we.roomid = :roomid ORDER BY created")
-                    .setParameter("roomid", roomid)
+            return (List<WhiteboardEdit>) session.createQuery("SELECT we FROM WhiteboardEdit we WHERE we.roomid = :roomid ORDER BY we.id")
+                    .setLong("roomid", roomid)
                     .list();
         } catch (NoResultException e) {
             return new ArrayList<>();
         } finally {
-            session.close();
+            if (session != null) {
+                session.close();
+            }
         }
     }
 }
