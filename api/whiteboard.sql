@@ -28,7 +28,10 @@ CREATE TABLE ChatMessage (
     data TEXT,
     created DATETIME NOT NULL,
 
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    KEY (userid),
+    KEY (roomid),
+    KEY (created)
 ) ENGINE=InnoDB;
 
 CREATE TABLE WhiteboardEdit (
@@ -38,5 +41,8 @@ CREATE TABLE WhiteboardEdit (
     data TEXT,
     created DATETIME NOT NULL,
 
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    KEY (userid),
+    KEY (roomid),
+    KEY (created)
 ) ENGINE=InnoDB;
