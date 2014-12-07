@@ -18,6 +18,11 @@ public class ChatDao {
         session = HibernateUtil.getSessionFactory().openSession();
     }
 
+    /**
+     * Saves a new chat message.
+     *
+     * @param message The data describing the message.
+     */
     public void saveChatMessage(ChatMessage message) {
         try {
             session.getTransaction().begin();
@@ -32,6 +37,12 @@ public class ChatDao {
         }
     }
 
+    /**
+     * Gets all of the chat messages in a particular room.
+     *
+     * @param roomid The ID of the room.
+     * @return List of chat messages in the room.
+     */
     @SuppressWarnings("unchecked")
     public List<ChatMessage> getMessagesByRoom(Long roomid) {
         try {

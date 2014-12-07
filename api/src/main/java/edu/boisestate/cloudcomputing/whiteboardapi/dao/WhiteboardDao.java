@@ -18,6 +18,11 @@ public class WhiteboardDao {
         session = HibernateUtil.getSessionFactory().openSession();
     }
 
+    /**
+     * Saves a new edit to a whiteboard.
+     *
+     * @param whiteboardEdit The data describing the edit.
+     */
     public void saveWhiteboardEdit(WhiteboardEdit whiteboardEdit) {
         try {
             session.getTransaction().begin();
@@ -32,6 +37,12 @@ public class WhiteboardDao {
         }
     }
 
+    /**
+     * Gets all of the edits on a whiteboard in a particular room.
+     *
+     * @param roomid The ID of the room.
+     * @return List of edits to the room's whiteboard.
+     */
     @SuppressWarnings("unchecked")
     public List<WhiteboardEdit> getEditsByRoom(Long roomid) {
         try {
