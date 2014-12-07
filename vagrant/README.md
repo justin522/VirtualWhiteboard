@@ -21,6 +21,22 @@ Assuming all is well, you can create and provision a dev host with this command.
 
     vagrant up
 
-This is likely to take a while, so it's a great time to get more coffee or play 2048 on your phone.
+This is likely to take a while, so it's a great time to get more coffee or play 2048 on your phone. When it's finished, open the Tomcat manager...
 
-(to be continued)
+   http://192.168.5.97:8080/manager/html
+
+The username is "yeah" and the password is "buddy". Upload the whiteboard-api.war file from the Maven project in the 'api' folder of this project. After it starts, ssh into the Vagrant VM...
+
+    vagrant ssh
+
+The code folder is mounted inside the vagrant user's home directory. Navigate to it and start up both the app and the load balancer...
+
+    cd VirtualWhiteboard
+    node app.js &
+    node loadbalancer.js &
+
+Then open the following URL in a Web browser...
+
+    http://192.168.5.97:8001/
+
+Have fun drawing and chatting!
