@@ -517,8 +517,7 @@
 $(document).ready(function(){
 	$("#whiteboard").workspace();
 	$("#post-chat").click(function(){
-		var m = $('#chat-input').val();
-		//var m = {type:'message',data:$('#chat-input').val()};
+		var m = {type:'message',data:$('#chat-input').val()};
 		$.whiteboard.socket().emit('msg',$.whiteboard.userName, m);
 		$('#chat-input').val('');
 	});
@@ -531,7 +530,7 @@ $(document).ready(function(){
 					var url=$('#link-url').val();
 					if(url.indexOf("http")!==0)url="http://"+url;
 					var m = {type:'link',url:url,desc:$('#link-desc').val()};
-					$.whiteboard.socket().emit('msg',$.whiteboard.userName, m);
+					$.whiteboard.socket().emit('link',$.whiteboard.userName, m);
 					$('#link-url,#link-desc').val('');
 					$( this ).dialog( "close" );
 					
@@ -746,7 +745,6 @@ $(document).ready(function(){
 	$( "#rl-button" ).button().click(function(){$.whiteboard.addSVGLayer();});
 //Connection: the next four lines handle the cet request to list existing rooms.
 	$.getJSON( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/getrooms", function( data ) {
-	// $.getJSON( "fakerooms.json", function( data ) {
 		var rooms=data.rooms;
 		for(var room in rooms)$("<option>"+rooms[room].roomName+"</option>").appendTo("#room-select");
 	});
@@ -761,18 +759,11 @@ $(document).ready(function(){
 				var room=$('#room-input').val();
 				if(room!==""&&user!==""){
 					userName=$('#input-usr').val();
-//Connection: the next four lines handle the post request to join the room
-					//$.post( "http://cs597-VirtualWhiteboardLB/whiteboard-api/room/create/"+room, function() {
-						$.whiteboard.socket().emit('room', user, room);
-					//	$( this ).dialog( "close" );
-					//});
-					// $.post( "fakesignin.txt", { username: user, pwd: password, room:room } );
-					// $.whiteboard.socket().emit('room', user, room);
-					 $.whiteboard.userName=user;
-					 $( this ).dialog( "close" );
+					$.whiteboard.socket().emit('room', user, room);
+					$.whiteboard.userName=user;
+					$( this ).dialog( "close" );
 				}else if(room==="")alert("Room name cannot be blank");
 				else alert("User name cannot be blank");
-				$("#water").water();
 				$('body').keydown(function(e) {
 					switch(e.which){
 						case 38:
@@ -818,6 +809,13 @@ $(document).ready(function(){
 		}else{
 			$("#room-input").val(this.value).hide();
 		}
+	});
+	$("#water").water().water("destroy");
+	$("#water-button").css("color","rgb(255, 0, 0)").click(function(){
+		if($("#water").hasClass("water"))$("#water").water("destroy");
+		else $("#water").water();
+		if($(this).css("color")==="rgb(255, 0, 0)")$(this).css("color","rgb(0, 0, 255)");
+		else $(this).css("color","rgb(255, 0, 0)");
 	});
 });
 

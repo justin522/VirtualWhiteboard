@@ -65,7 +65,7 @@ socket.emit('message',reply);
 							}
 							for(var obj in data3.whiteboard)
 {
-	var drawing =JSON.stringify({action:'draw',user:data3.whiteboard[obj].user,data:data3.whiteboard[obj].data})
+	var drawing =JSON.stringify({action:'draw',user:data3.whiteboard[obj].user,data:data3.whiteboard[obj].data});
 socket.emit('draw',drawing);
 }
 						});
@@ -81,8 +81,7 @@ socket.emit('draw',drawing);
 			client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+room+"/user/"+userName,args,function(data,response){
 				//console.log(data);
 			});
-			// messages[room].push(loginMessage);
-			io.to(room).emit('join',loginMessage);
+			io.to(room).emit('message',loginMessage);
 			socket.username=userName;
 			socket.room=room;
 		}
@@ -95,16 +94,20 @@ socket.emit('draw',drawing);
 			client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+socket.room+"/user/"+socket.username,args,function(data,response){
 				//console.log(data);
 			});
-			// messages[socket.room].push(logoutMessage);
-			io.to(socket.room).emit('join',logoutMessage);
+			io.to(socket.room).emit('message',logoutMessage);
 		}
 	});
 	socket.on("msg",function(usr,m){
-		var msg={};
-		msg.usr=usr;
-		msg.m=m;
-		log.messages.push(msg);
 		var reply = JSON.stringify({action:'message',user:usr,msg:m});
+		args.data=reply;
+		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+socket.room+"/user/"+usr,args,function(data,response){
+			console.log('insert response: ' +data);
+		});
+		console.log('reply: '+  reply);
+		io.to(socket.room).emit('message',reply);
+	});
+	socket.on("link",function(usr,m){
+		var reply = JSON.stringify({action:'link',user:usr,msg:m});
 		args.data=reply;
 		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updatechat/"+socket.room+"/user/"+usr,args,function(data,response){
 			console.log('insert response: ' +data);
@@ -114,12 +117,11 @@ socket.emit('draw',drawing);
 	});
 	socket.on('drawing',function(data){
 		var drawing = JSON.parse(data);
-		var reply = JSON.stringify({action:'draw',user:drawing.user,data:drawing.data})
+		var reply = JSON.stringify({action:'draw',user:drawing.user,data:drawing.data});
 		args.data=reply;
 		client.post("http://cs597-VirtualWhiteboardLB/whiteboard-api/room/updateboard/"+socket.room+"/user/"+drawing.user,args,function(data,response){
 			console.log(data);
 		});
-		// drawinginstructions[socket.room].push(reply);
 		io.to(socket.room).emit('draw',reply);
 	});
 	socket.on('water',function(x,y){io.to(socket.room).emit('water',socket.username,x,y);});

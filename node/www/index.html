@@ -102,7 +102,7 @@
 				overflow: auto;
 			}
 			#chat-input{
-				width:492px;
+				width:455px;
 				margin-left: 1em;
 				float: left;
 			}
@@ -124,9 +124,9 @@
 			.tmp {
 				display: none;
 			}
-			/*#chat-display{
+			.no-cursor{
 				cursor: none;
-			}*/
+			}
 		</style>
 		<script src="/socket.io/socket.io.js"></script>
 		<script src='lib/jquery.js'></script>
@@ -135,7 +135,7 @@
 		<script src='js/whiteboard.js'></script>
 		<script src='js/chat.js'></script>
 		<script src='js/svgTools.js'></script>
-		<!--<script src='js/water.js'></script>-->
+		<script src='js/water.js'></script>
 	</head>
 
 	<body>
@@ -197,6 +197,7 @@
 					<input id="chat-input"></textarea>
 					<input id="post-chat" type="button" value="Post Message" />
 					<button id="link-button"><img width="15px" src="img/link.png" /></button>
+					<button id="water-button">&#9810;</button>
 				</div>
 			</div>
 		</div>

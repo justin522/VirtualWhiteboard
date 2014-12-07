@@ -13,11 +13,10 @@
 			var context, image, data, buffer1, buffer2, tempbuffer, isUserInteracting;
 			container=this.element;
 			canvas=$("<canvas />");
-			$(container).append(canvas).addClass("ui-corner-all");
+			$(container).append(canvas).addClass("water ui-corner-all");
 			canvas.addClass("ui-corner-all");
-			$(chat).css("background","none").mousedown(function(event){
-				//event.preventDefault();
-				//$(chat).children().trigger(event);
+			$.effects.chatBg=$(chat).css("background");
+			$(chat).addClass("no-cursor").css("background","none").mousedown(function(event){
 				isUserInteracting = true;
 				pointers = [[(event.clientX-$(container).offset().left)/ QUALITY, (event.clientY-$(container).offset().top)/ QUALITY]];
 				$.whiteboard.socket().emit('water', (event.clientX-$(container).offset().left)/ QUALITY, (event.clientY-$(container).offset().top)/ QUALITY);
@@ -34,8 +33,7 @@
 				buffer1[ Math.floor(Math.random() * WIDTH) + (Math.floor(Math.random() * HEIGHT) * WIDTH)] = 255;
 			});
 			$("#chat-display").css({background:"none",color:"white"});
-			$("#chat-input").css({color:"black"});
-			//canvas.css("position","absolute");
+			$("#chat-input,#post-chat").css({color:"black"});
 			context=canvas[0].getContext("2d");
 			$(this.element).offset($(chat).offset());
 			canvas[0].width = WIDTH;
@@ -88,6 +86,11 @@
 		_setOptions: function( options ) {
 			_super( options );
 			refresh();
+		},
+		_destroy: function() {
+			$(this.element).removeClass("water ui-corner-all").children().remove();
+			$(chat).css({background:$.effects.chatBg,color:"white"}).removeClass("no-cursor");
+			$("#chat-display").css({background:"slategray",color:"black"});
 		}
 	});
 })( jQuery );
