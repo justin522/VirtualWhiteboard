@@ -9,6 +9,16 @@ class baseconfig($user = 'vagrant') {
   package { 'htop':            ensure => present }
   package { 'tree':            ensure => present }
 
+  host { 'cs597-VirtualWhiteboardLB':
+    ip           => '127.0.0.1',
+    host_aliases => [
+      'cs597-VirtualWhiteboardNodeOne',
+      'cs597-VirtualWhiteboardNodeTwo',
+      'cs597-VirtualWhiteboardNodeThree',
+      'cs597-VirtualWhiteboardDB',
+    ],
+  }
+
   # use a custom .bashrc file
   file { "/home/${user}/.bashrc":
     ensure  => present,

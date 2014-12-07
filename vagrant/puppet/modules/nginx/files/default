@@ -1,0 +1,15 @@
+upstream appcluster {
+  server cs597-VirtualWhiteboardNodeOne:8080;
+  server cs597-VirtualWhiteboardNodeTwo:8080;
+  server cs597-VirtualWhiteboardNodeThree:8080;
+}
+
+server {
+  listen 80;
+  server_name cs597-VirtualWhiteboardLB;
+
+  location ~ /.* {
+    proxy_pass http://appcluster;
+    include /etc/nginx/proxy_params;
+  }
+}
