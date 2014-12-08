@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wadl:application xmlns:wadl="http://wadl.dev.java.net/2009/02" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <wadl:doc xmlns:enunciate="http://enunciate.codehaus.org/" enunciate:generatedBy="Enunciate-1.28"/>
+  <wadl:grammars/>
+  <wadl:resources base="http://localhost:8080/whiteboard-api">
+    <wadl:resource path="/rest/room/getrooms">
+      <wadl:method name="GET">
+        <wadl:doc>
+          <![CDATA[To fetch all available Rooms]]>
+        </wadl:doc>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[JSON of all available Rooms]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+    <wadl:resource path="/rest/room/{roomname}">
+      <wadl:param name="roomname" style="template">
+        <wadl:doc>
+          <![CDATA[The roomname to look up.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:method name="GET">
+        <wadl:doc>
+          <![CDATA[Gets the room deatil for given roomname]]>
+        </wadl:doc>
+        <wadl:request/>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[room detail with the given roomname.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+    <wadl:resource path="/rest/users/getusers">
+      <wadl:method name="GET">
+        <wadl:doc>
+          <![CDATA[Gets a list of all users.]]>
+        </wadl:doc>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[The list of users.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+    <wadl:resource path="/rest/users/{username}">
+      <wadl:param name="username" style="template">
+        <wadl:doc>
+          <![CDATA[The username to look up.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:method name="GET">
+        <wadl:doc>
+          <![CDATA[Gets the user id of the user with the given username.]]>
+        </wadl:doc>
+        <wadl:request/>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[The user with that username.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+    <wadl:resource path="/rest/room/create/{roomname}">
+      <wadl:param name="roomname" style="template">
+        <wadl:doc>
+          <![CDATA[The roomname for the new room.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:method name="POST">
+        <wadl:doc>
+          <![CDATA[Creates a new room with the given roomname.]]>
+        </wadl:doc>
+        <wadl:request/>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[The newly created room.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+    <wadl:resource path="/rest/users/create/{username}">
+      <wadl:param name="username" style="template">
+        <wadl:doc>
+          <![CDATA[The username for the new user.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:method name="POST">
+        <wadl:doc>
+          <![CDATA[Creates a new user with the given username.]]>
+        </wadl:doc>
+        <wadl:request/>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[The newly created user.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+    <wadl:resource path="/rest/room/updateboard/{room}/user/{user}">
+      <wadl:param name="room" style="template">
+        <wadl:doc>
+          <![CDATA[The room in which the edit was made.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:param name="user" style="template">
+        <wadl:doc>
+          <![CDATA[The user who made the edit.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:method name="POST">
+        <wadl:doc>
+          <![CDATA[Updates a room's whiteboard with a new edit.]]>
+        </wadl:doc>
+        <wadl:request>
+          <wadl:doc>
+            <![CDATA[The new edit in JSON.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:request>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[The newly saved edit.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+    <wadl:resource path="/rest/room/updatechat/{room}/user/{user}">
+      <wadl:param name="room" style="template">
+        <wadl:doc>
+          <![CDATA[The room in which the message was posted.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:param name="user" style="template">
+        <wadl:doc>
+          <![CDATA[The user who posted the message.]]>
+        </wadl:doc>
+      </wadl:param>
+      <wadl:method name="POST">
+        <wadl:doc>
+          <![CDATA[Updates a room's chat with a new message.]]>
+        </wadl:doc>
+        <wadl:request>
+          <wadl:doc>
+            <![CDATA[The new message in JSON.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:request>
+        <wadl:response>
+          <wadl:doc>
+            <![CDATA[The newly saved message.]]>
+          </wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+  </wadl:resources>
+</wadl:application>

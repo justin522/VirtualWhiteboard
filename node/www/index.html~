@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+		<title>Virtual Whiteboard</title>
+		<meta name="description" content="A real time collaborative drawing application.">
+		<meta name="author" content="Justin">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" href="/favicon.ico">
+		
+		<link rel='stylesheet' href='lib/normalize.css' />
+		<link rel='stylesheet' href='lib/jquery-ui/jquery-ui.css' />
+		<link rel='stylesheet' href='lib/spectrum.css' />
+		<style>
+			
+/* Icons
+----------------------------------*/
+
+/* states and images */
+#drawing-tools .ui-icon{
+	width: 32px;
+	height: 32px;
+	background-image: url("img/draw-icons.png");
+	margin-top: -16px;
+	margin-left: -16px;
+}
+
+/* positioning */
+.draw-icon-rect {background-position: 0 0;}
+.draw-icon-ngon {background-position: -32px 0;}
+.draw-icon-circle {background-position: -64px 0;}
+.draw-icon-oval {background-position: -96px 0;}
+.draw-icon-line {background-position: -128px 0;}
+.draw-icon-pline {background-position: -160px 0;}
+.draw-icon-path {background-position: -192px 0;}
+.draw-icon-free {background-position: -224px 0;}
+.draw-icon-erase {background-position: 0 -32px;}
+.draw-icon-move {background-position: -32px -32px;}
+.draw-icon-rotate {background-position: -64px -32px;}
+.draw-icon-select {background-position: -96px -32px;}
+.draw-icon-text {background-position: -128px -32px;}
+.draw-icon-img {background-position: -160px -32px;}
+.draw-icon-undo {background-position: -192px -32px;}
+.draw-icon-realtime {background-position: -224px -32px;}
+.draw-icon-polygon{background-position: -0px -64px;}
+		</style>
+		<style>
+			body{
+				background-color: gray;
+				background: linear-gradient(to right, #000000, #000099 10%, #0000aa 50%, #000099 90%, #000000);
+			}
+			body>div{
+				position:relative;
+				width:1140px;
+				margin-top:10px;
+				margin-left:auto;
+				margin-right:auto;
+			}
+			svg{
+				fill:white;
+			}
+			#svg0{
+				display: none;
+			}
+			#tab-container{
+				position: absolute;
+				top:0;
+				bottom:0;
+				left:710px;
+				height:500px;
+			}
+			#tabs{
+				position: absolute;
+				top:0;
+				left:710px;
+				height: 99%;
+				min-height: 900px;
+			}
+			.ui-tabs-panel{
+				background:white;
+				color:black;
+				overflow-y:scroll;
+			}
+			
+			
+			#chat{
+				position:absolute;
+				top:510px;
+				bottom:0;
+				left:0;
+				width:705px;
+				min-height: 396px;
+				color:black;
+			}
+			#chat-display{
+				height: 320px;
+				background-color: slategray;
+				margin: 1em;
+				overflow: auto;
+			}
+			#chat-input{
+				width:492px;
+				margin-left: 1em;
+				float: left;
+			}
+			
+			#sample-container{
+				float: right;
+			}
+			
+			.uname{
+				color:blue;
+				font-style: italic;
+			}
+			#signin input,#signin select,#link-dialog input,#image-dialog input{
+				color:black;
+			}
+			.ui-dialog-titlebar-close {
+				visibility: hidden;
+			}
+			.tmp {
+				display: none;
+			}
+			#chat-display{
+				cursor: none;
+			}
+		</style>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src='lib/jquery.js'></script>
+		<script src='lib/jquery-ui/jquery-ui.min.js'></script>
+		<script src='lib/spectrum.js'></script>
+		<script src='js/whiteboard.js'></script>
+		<script src='js/chat.js'></script>
+		<script src='js/svgTools.js'></script>
+		<!--<script src='js/water.js'></script>-->
+	</head>
+
+	<body>
+		<div>
+			<div id="whiteboard"></div>
+			<div id="tabs">
+				<ul>
+					<li><a href="#tools">Tools</a></li>
+					<li><a href="#layers">Layers</a></li>
+					<li><a href="#links">Files/Links</a></li>
+					<li><a href="#users">Users</a></li>
+				</ul>
+				<div id="tools">
+					<div id="drawing-tools">
+						<input type="checkbox" checked="checked" id="realtime" /><label for="realtime">Real Time</label></input><br/><br/>
+						<input type="checkbox" id="line"><label for="line">Line</label></input>	
+						<input type="checkbox" id="freehand" /><label for="freehand">Freehand</label></input>
+						<input type="checkbox" id="rectangle"><label for="rectangle">Rectangle</label></input>
+						<input type="checkbox" id="circle"><label for="circle">Circle</label></input>
+						<input type="checkbox" id="image"><label for="image">Image</label></input><br/><br/>
+						<input type="checkbox" id="polyline"><label for="polyline">Polyline</label></input>
+						<input type="checkbox" id="path"><label for="path">Path</label></input>
+						<input type="checkbox" id="polygon"><label for="polygon">Polygon</label></input>
+						<input type="checkbox" id="oval"><label for="oval">Oval</label></input>
+						<input type="checkbox" id="text"><label for="text">Text</label></input><br/><br/>
+						<input type="checkbox" id="erase"><label for="erase">Erase</label></input>
+						<input type="checkbox" id="select"><label for="select">Select</label></input>
+						<input type="checkbox" id="move"><label for="move">Move</label></input>
+						<input type="checkbox" id="rotate"><label for="rotate">Rotate</label></input>
+						<input type="checkbox" id="undo"><label for="undo">Undo</label></input>
+					</div><br/>
+					<div id="color-tools">
+						<svg id="sample-container" width="100" height="100">
+							<circle id="sample" cx="50" cy="50" r="40" stroke="black" stroke-width="1" fill="none" />
+						</svg>
+						<input id='fillcolor' class='colorpicker' /> Fill<br />
+						<input id='linecolor' class='colorpicker' /> Stroke<br />
+						<input id='linesize' class="number" value="1" maxlength="4" size="1" /> Thickness<br />
+					</div>
+				</div>
+				<div id="layers">
+					<div class="display-container">
+						<input type="button" id="rl-button" value="Add Raster Layer" />
+						<input type="button" id="vl-button" value="Add Vector Layer" />
+					</div>
+				</div>
+				<div id="links">
+					<div class="display-container">
+						
+					</div>
+				</div>
+				<div id="users">
+				</div>
+			</div>
+			<div id="water"></div>
+			<div id="chat" class="ui-widget ui-widget-content ui-corner-all">
+				<div id="chat-display"></div>
+				<div id="chat-tools">
+					<input id="chat-input"></textarea>
+					<input id="post-chat" type="button" value="Post Message" />
+					<button id="link-button"><img width="15px" src="img/link.png" /></button>
+				</div>
+			</div>
+		</div>
+		 <div id="signin" title="Select Room">
+				Room:
+				<select id="room-select">
+					<option value="new">New Room</option>
+				</select><br />
+				<div id="post-room"><input id="room-input" type="text" /></div>
+				User name:<input id="input-usr" type="text" value="Guest" /><br />
+				<!--Password: <input id="input-password" type="password" /><br />-->
+		 </div>
+		 <div id="link-dialog" title="Input link data.">
+				Description: <input id="link-desc" type="text" /><br />
+				URL: http://&thinsp;<input id='link-url' /><br />
+		 </div>
+		 <div id="image-dialog" title="Input image url.">
+				URL: http:// <input id='img-url' /><br />
+		 </div>
+	</body>
+</html>
